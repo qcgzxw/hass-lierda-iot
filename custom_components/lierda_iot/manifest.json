@@ -1,0 +1,17 @@
+{
+  "domain": "lierda_iot",
+  "name": "Lierda iot",
+  "codeowners": [
+    "@qcgzxw"
+  ],
+  "version": "1.0.0",
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/qcgzxw/hass-lierda-iot",
+  "issue_tracker": "https://github.com/qcgzxw/hass-lierda-iot/issues",
+  "homekit": {},
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": []
+}

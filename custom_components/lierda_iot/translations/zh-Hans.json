@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lierda iot",
+        "description": "添加lierdalux.cn账号",
+        "data": {
+          "username": "用户名",
+          "password": "密码",
+          "refresh_interval": "刷新时长",
+          "filter_device": "筛选设备",
+          "remember_me": "记住密码"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "连接失败",
+      "invalid_auth": "登录失败",
+      "unknown": "未知错误"
+    },
+    "abort": {
+      "already_configured": "已配置"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lierda iot",
+        "data": {
+          "refresh_interval": "刷新时长"
+        }
+      }
+    }
+  }
+}

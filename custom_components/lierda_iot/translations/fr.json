@@ -1,0 +1,35 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lierda iot Configuration",
+        "description": "Please add lierdalux.cn account",
+        "data": {
+          "username": "username",
+          "password": "password",
+          "refresh_interval": "refresh interval",
+          "filter_device": "filter device",
+          "remember_me": "remember me"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "cannot connect",
+      "invalid_auth": "invalid auth",
+      "unknown": "unknown"
+    },
+    "abort": {
+      "already_configured": "already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lierda iot Configuration",
+        "data": {
+          "refresh_interval": "refresh interval"
+        }
+      }
+    }
+  }
+}
