@@ -14,12 +14,12 @@ class DeviceAttributes(StrEnum):
     switch5_name = "5键开关"
     switch6_name = "6键开关"
 
-    switch_1 = "switch_1"
-    switch_2 = "switch_2"
-    switch_3 = "switch_3"
-    switch_4 = "switch_4"
-    switch_5 = "switch_5"
-    switch_6 = "switch_6"
+    switch_1 = "ky1"
+    switch_2 = "ky2"
+    switch_3 = "ky3"
+    switch_4 = "ky4"
+    switch_5 = "ky5"
+    switch_6 = "ky6"
 
     switch_1_key = "KY1"
     switch_2_key = "KY2"
@@ -90,7 +90,7 @@ class LierdaSwitchDevice(LierdaDevice):
 
     def is_on(self, attr: str) -> bool:
         swi = int(self.get_attribute(DeviceAttributes.switch_key), 16)
-        index = int(attr.removeprefix("switch_"))
+        index = int(attr.removeprefix("ky"))
         if 0 < index <= 6:
             light_mask = 1 << (index - 1)
             return (swi & light_mask) != 0
@@ -99,7 +99,7 @@ class LierdaSwitchDevice(LierdaDevice):
 
     async def entry_set_attribute(self, attr: str, value):
         await super().entry_set_attribute(attr, value)
-        index = int(attr.removeprefix("switch_"))
+        index = int(attr.removeprefix("ky"))
         switch = value == "ON"
         swi = int(self.get_attribute(DeviceAttributes.switch_key), 16)
         if 0 < index <= 6:

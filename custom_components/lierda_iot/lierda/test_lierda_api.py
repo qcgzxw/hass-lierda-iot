@@ -3,13 +3,14 @@ import unittest
 
 from .core.lierda_api import LierdaAuth, LierdaApi
 
+domain = "www.lierdalux.cn"
 USERNAME = "test"
 PASSWORD = "test"
 
 
 class TestLierdaAuth(unittest.TestCase):
     def setUp(self):
-        self.auth = LierdaAuth(USERNAME, PASSWORD)
+        self.auth = LierdaAuth(USERNAME, PASSWORD, domain)
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
 
@@ -25,11 +26,11 @@ class TestLierdaAuth(unittest.TestCase):
 class TestLierdaAPI(unittest.TestCase):
 
     def setUp(self):
-        self.auth = LierdaAuth(USERNAME, PASSWORD)
+        self.auth = LierdaAuth(USERNAME, PASSWORD, domain)
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.loop.run_until_complete(self.auth.login())
-        self.api = LierdaApi(**self.auth.data)
+        self.api = LierdaApi(**self.auth.data, domain=domain)
 
     def tearDown(self):
         self.loop.close()
