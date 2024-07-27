@@ -16,7 +16,15 @@
 
 ## 使用说明
 
-1. 在[lierda-lux 后台](https://www.lierdalux.cn)注册账号
+### 支持平台
+
+- [x] [lierda-lux 后台](https://www.lierdalux.cn)
+- [x] [lierda智能教室 后台](https://lsd.lierdalux.cn)
+- [ ] [lierda智能酒店 后台](https://hotel.lierdalux.cn)(未测试)
+
+PS: 以上平台均可注册智能家居网关，功能基本完全一样但是相互隔离；不同平台下注册的同一网关不可无缝切换，需要重新配置。
+
+1. 在以上平台注册账号，平台可以三选一
 2. 添加智能网关
    ![lierdalux-智能网关添加说明.png](./assets/img/lierdalux-智能网关添加说明.png)
 3. 添加成功后，会自动添加网关下所有设备
@@ -36,6 +44,16 @@
 
 ## 版本更新说明
 
+### v1.1.0
+
+#5
+
+- [x] 支持更多平台
+- [x] 升级兼容逻辑
+- [x] 更改配置实体ID
+- [x] 更改实体ID生成逻辑
+- [x] 修复部分bug
+
 ### v1.0.0
 
 - [x] 实现基本功能
@@ -50,5 +68,7 @@
 ## lierda相关文档资源
 
 - [lierda-lux 后台](https://www.lierdalux.cn)
+- [lierda智能教室 后台](https://lsd.lierdalux.cn)
+- [lierda智能酒店 后台](https://hotel.lierdalux.cn)
 - [智能网关:桌面型智能网关说明书](http://n2n.lierdalux.cn:8083/lib/exe/fetch.php?media=%E6%99%BA%E8%83%BD%E7%BD%91%E5%85%B3:%E6%A1%8C%E9%9D%A2%E5%9E%8B%E6%99%BA%E8%83%BD%E7%BD%91%E5%85%B3%E8%AF%B4%E6%98%8E%E4%B9%A6.pdf)
 - [Lierdalux产品发布系统](http://n2n.lierdalux.cn:8083/doku.php)

@@ -8,8 +8,7 @@ import aiohttp
 from .error import LierdaAuthError, LierdaApiError, LierdaRequestInvalid, LierdaRequestTimeout
 
 _LOGGER = logging.getLogger(__name__)
-
-API_URL = "https://www.lierdalux.cn/action"
+DEFAULT_DOMAIN = "www.lierdalux.cn"
 
 ACTION_LOGIN = "login"
 ACTION_CMD = "cmd"
@@ -19,15 +18,18 @@ ACTION_GET_DDC_BY_DEVICE_ID = "getDeviceByDeviceId"
 
 
 class _LierdaRequest:
-    @staticmethod
+    def __init__(self, domain=DEFAULT_DOMAIN):
+        self.api_url = f"https://{domain}/action"
+
     async def post(
+            self,
             data: dict
     ) -> dict:
         _LOGGER.debug(data)
         ten_seconds_timeout = aiohttp.ClientTimeout(total=10)
         async with aiohttp.ClientSession(timeout=ten_seconds_timeout) as session:
             try:
-                async with session.post(API_URL, json=data) as response:
+                async with session.post(self.api_url, json=data) as response:
                     if response.status != 200:
                         raise LierdaRequestInvalid("post failed. status code: %s" % response.status)
                     resp_data = await response.json()
@@ -39,10 +41,12 @@ class _LierdaRequest:
 
 class LierdaAuth(_LierdaRequest):
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, domain=DEFAULT_DOMAIN):
         self.username = username
         self.password = password
+        self.domain = domain
         self._data = None
+        super().__init__(domain)
 
     async def login(self) -> None:
         if not self.username or not self.password:
@@ -68,7 +72,9 @@ class LierdaAuth(_LierdaRequest):
     def data(self):
         if self._data is None:
             raise LierdaAuthError("not authorized")
-        return {k: v for k, v in self._data.items() if k in ('userid', 'username', 'role', 'parentid', 'nat', 'phone')}
+        data = {k: v for k, v in self._data.items() if k in ('userid', 'username', 'role', 'parentid', 'nat', 'phone')}
+        data['domain'] = self.domain
+        return data
 
 
 class LierdaApi(_LierdaRequest):
@@ -81,7 +87,9 @@ class LierdaApi(_LierdaRequest):
             parentid: int,
             nat: str,
             phone: str,
+            domain=DEFAULT_DOMAIN
     ):
+        super().__init__(domain)
         self.userid = userid
         self.username = username
         self.role = role
@@ -112,7 +120,7 @@ class LierdaApi(_LierdaRequest):
         if resp is None:
             raise LierdaApiError("API response is empty")
         if not resp['success']:
-            raise LierdaApiError(resp['message'])
+            raise LierdaApiError(resp['msg'])
         return resp
 
     async def get_device_list_by_user_id(self):
@@ -137,8 +145,9 @@ class LierdaDeviceApi(LierdaApi):
             id: int,
             macid: str,
             ddcmac: str,
+            domain=DEFAULT_DOMAIN
     ):
-        super().__init__(userid, username, role, parentid, nat, phone)
+        super().__init__(userid, username, role, parentid, nat, phone, domain)
         self.id = id
         self.macid = macid
         self.ddcmac = ddcmac

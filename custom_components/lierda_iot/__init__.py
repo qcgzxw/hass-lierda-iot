@@ -21,6 +21,12 @@ async def async_setup(hass: HomeAssistant, config_entry: dict):
     return True
 
 
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    if config_entry.version == 1:
+        _LOGGER.info("Migrating from version 1 to 2")
+    return True
+
+
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Set up Lierda iot from a config entry."""
     _LOGGER.debug(config_entry.data)
