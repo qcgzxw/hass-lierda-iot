@@ -7,7 +7,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class DeviceAttributes(StrEnum):
-    name = "Door"
+    name = "door"
 
     door = "door"
     battery_voltage = "battery_voltage"

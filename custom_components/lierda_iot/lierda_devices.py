@@ -47,7 +47,7 @@ LIERDA_DEVICES = {
         "name": SwitchAttributes.switch1_name,
         "entities": {
             SwitchAttributes.switch_1: {
-                "name": "Switch 1",
+                "name": "开关1",
                 "type": Platform.SWITCH
             },
         }
@@ -56,11 +56,11 @@ LIERDA_DEVICES = {
         "name": SwitchAttributes.switch2_name,
         "entities": {
             SwitchAttributes.switch_1: {
-                "name": "Switch 1",
+                "name": "开关1",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_2: {
-                "name": "Switch 2",
+                "name": "开关2",
                 "type": Platform.SWITCH
             },
         }
@@ -69,15 +69,15 @@ LIERDA_DEVICES = {
         "name": SwitchAttributes.switch3_name,
         "entities": {
             SwitchAttributes.switch_1: {
-                "name": "Switch 1",
+                "name": "开关1",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_2: {
-                "name": "Switch 2",
+                "name": "开关2",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_3: {
-                "name": "Switch 3",
+                "name": "开关3",
                 "type": Platform.SWITCH
             },
         }
@@ -86,19 +86,19 @@ LIERDA_DEVICES = {
         "name": SwitchAttributes.switch4_name,
         "entities": {
             SwitchAttributes.switch_1: {
-                "name": "Switch 1",
+                "name": "开关1",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_2: {
-                "name": "Switch 2",
+                "name": "开关2",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_3: {
-                "name": "Switch 3",
+                "name": "开关3",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_4: {
-                "name": "Switch 4",
+                "name": "开关4",
                 "type": Platform.SWITCH
             },
         }
@@ -107,27 +107,27 @@ LIERDA_DEVICES = {
         "name": SwitchAttributes.switch6_name,
         "entities": {
             SwitchAttributes.switch_1: {
-                "name": "Switch 1",
+                "name": "开关1",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_2: {
-                "name": "Switch 2",
+                "name": "开关2",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_3: {
-                "name": "Switch 3",
+                "name": "开关3",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_4: {
-                "name": "Switch 4",
+                "name": "开关4",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_5: {
-                "name": "Switch 5",
+                "name": "开关5",
                 "type": Platform.SWITCH
             },
             SwitchAttributes.switch_6: {
-                "name": "Switch 6",
+                "name": "开关6",
                 "type": Platform.SWITCH
             },
         }

@@ -31,6 +31,8 @@ STEP_AUTH_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_REFRESH_INTERVAL, default=DEFAULT_REFRESH_INTERVAL): int,
         # vol.Required(CONF_FILTER_DEVICE, default=False): bool, # 未实现
         # vol.Required(CONF_REMEMBER_ME, default=True): bool, # 未实现
+        vol.Required(CONF_LUX_DOMAIN, default=LIERDA_LUX_URL): vol.In(
+            [LIERDA_LUX_URL, LIERDA_LSD_URL, LIERDA_HOTEL_URL]),
     }
 )
 STEP_INIT_OPTIONS_DATA_SCHEMA = vol.Schema(
@@ -78,11 +80,11 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         record_file = self.hass.config.path(f"{STORAGE_PATH}/devices.json")
         return load_json(record_file, default={})
 
-    async def validate_login(self, username: str, password: str, save_account: bool) -> None:
+    async def validate_login(self, username: str, password: str, domain: str, save_account: bool) -> None:
         try:
             if username is None or password is None:
                 raise InvalidAuth
-            self.auth = LierdaAuth(username, password)
+            self.auth = LierdaAuth(username, password, domain)
             await self.auth.login()
             self.config[CONF_KEY_USER_AUTH_DATA] = self.auth.data
             if save_account:
@@ -135,6 +137,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                 await self.validate_login(
                     username=user_input[CONF_USERNAME],
                     password=user_input[CONF_PASSWORD],
+                    domain=user_input[CONF_LUX_DOMAIN],
                     save_account=True
                 )
                 self.validate_interval(user_input[CONF_REFRESH_INTERVAL])
@@ -158,7 +161,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def _create_entry(self, user_input):
-        unique_id = user_input[CONF_USERNAME]
+        unique_id = f"{self.config[CONF_KEY_USER_AUTH_DATA]['userid']}@{LIERDA_API_LIST[user_input[CONF_LUX_DOMAIN]]}"
         _LOGGER.debug(unique_id)
         await self.async_set_unique_id(unique_id)
 
@@ -197,9 +200,9 @@ class LierdaConfigFlowHandler(OptionsFlow):
         self.config_entry = config_entry
 
     async def async_step_init(self, user_input=None):
-        old_refresh_interval = self.hass.data[DOMAIN][CONF_KEY_REFRESH_INTERVAL] if CONF_KEY_REFRESH_INTERVAL in \
-                                                                                    self.hass.data[
-                                                                                        DOMAIN] else DEFAULT_REFRESH_INTERVAL
+        old_refresh_interval = self.hass.data[DOMAIN][CONF_KEY_REFRESH_INTERVAL] \
+            if CONF_KEY_REFRESH_INTERVAL in self.hass.data[DOMAIN] \
+            else DEFAULT_REFRESH_INTERVAL
         defaults = {CONF_REFRESH_INTERVAL: old_refresh_interval}
 
         if user_input is not None:
