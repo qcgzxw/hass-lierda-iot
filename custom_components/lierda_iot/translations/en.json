@@ -9,7 +9,8 @@
           "password": "password",
           "refresh_interval": "refresh interval",
           "filter_device": "filter device",
-          "remember_me": "remember me"
+          "remember_me": "remember me",
+          "lux_domain": "lux domain"
         }
       }
     },

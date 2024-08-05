@@ -15,7 +15,7 @@ class LierdaEntity(Entity):
         self._device.register_update(self.update_state)
         self._config = LIERDA_DEVICES[self._device.type]["entities"][entity_key]
         self._entity_key = entity_key
-        self._unique_id = f"{DOMAIN}.{self._device.device_id}_{entity_key}"
+        self._unique_id = f"{DOMAIN}.{self._device.mac_id}_{entity_key}"
         self.entity_id = self._unique_id
         self._device_name = self._device.name
 
@@ -25,16 +25,16 @@ class LierdaEntity(Entity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return {
-            "manufacturer": BAND,
-            "model": f"{LIERDA_DEVICES[self._device.device_type]['name']} "
-                     f"{self._device.link}"
-                     f" ({self._device.mac_id})",
-            "identifiers": {(DOMAIN, self._device.device_id)},
-            "name": self._device_name,
-            "serial_number": str(self._device.ddc_id),
-            "sw_version": self._device.firmware_version,
-        }
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._device.mac_id)},
+            name=self._device_name,
+            manufacturer=BAND,
+            model=f"{LIERDA_DEVICES[self._device.device_type]['name']} "
+                  f"{self._device.link}"
+                  f" ({self._device.mac_id})",
+            sw_version=self._device.firmware_version,
+            serial_number=str(self._device.ddc_id),
+        )
 
     @property
     def unique_id(self):
