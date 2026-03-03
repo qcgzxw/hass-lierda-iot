@@ -1,16 +1,20 @@
 # tests/test_api/test_client.py
 """Tests for Lierda API client."""
 
+import json
+
 import pytest
 from aioresponses import aioresponses
 
 from custom_components.lierda_iot.api.client import LierdaClient
 from custom_components.lierda_iot.api.exceptions import (
+    LierdaApiError,
     LierdaAuthError,
     LierdaConnectionError,
     LierdaTimeoutError,
 )
 from custom_components.lierda_iot.models.auth import AuthData
+from custom_components.lierda_iot.models.device import Device
 
 
 @pytest.mark.asyncio
@@ -336,4 +340,372 @@ class TestLierdaClientSession:
         """Test close() works when session was never created."""
         client = LierdaClient()
         # Should not raise any errors
+        await client.close()
+
+
+@pytest.mark.asyncio
+class TestLierdaClientDeviceManagement:
+    """Tests for LierdaClient device management functionality."""
+
+    async def test_get_all_devices_success(self):
+        """Test get_all_devices returns list of Device objects."""
+        domain = "www.lierdalux.cn"
+
+        # Setup authenticated client
+        client = LierdaClient()
+        client.auth_data = AuthData(
+            userid=12345,
+            username="testuser",
+            domain=domain,
+            role=1,
+            parentid=0,
+            nat="CN",
+            phone="13800138000",
+        )
+
+        # Mock device list response
+        mock_response = {
+            "success": True,
+            "msg": "Success",
+            "data": [
+                {
+                    "id": 1,
+                    "name": "Living Room Light",
+                    "alias": "Main Light",
+                    "type": 1,
+                    "macId": "AA:BB:CC:DD:EE:FF",
+                    "attributes": '{"LIVE":"ON","FWV":"1.0.0","POWER":"ON"}',
+                    "ddcId": 100,
+                },
+                {
+                    "id": 2,
+                    "name": "Bedroom Light",
+                    "alias": "",
+                    "type": 1,
+                    "macId": "11:22:33:44:55:66",
+                    "attributes": '{"LIVE":"OFF","FWV":"1.0.1","POWER":"OFF"}',
+                    "ddcId": 101,
+                },
+            ],
+        }
+
+        with aioresponses() as m:
+            m.post(
+                f"https://{domain}/action",
+                payload=mock_response,
+                status=200,
+            )
+
+            devices = await client.get_all_devices()
+
+            # Verify returned devices
+            assert len(devices) == 2
+            assert all(isinstance(d, Device) for d in devices)
+
+            # Verify first device
+            assert devices[0].id == 1
+            assert devices[0].name == "Main Light"
+            assert devices[0].type == 1
+            assert devices[0].mac_id == "AA:BB:CC:DD:EE:FF"
+            assert devices[0].available is True
+            assert devices[0].firmware_version == "1.0.0"
+            assert devices[0].ddc_id == 100
+
+            # Verify second device
+            assert devices[1].id == 2
+            assert devices[1].name == "Bedroom Light"
+            assert devices[1].available is False
+
+        await client.close()
+
+    async def test_get_all_devices_empty_list(self):
+        """Test get_all_devices returns empty list when no devices."""
+        domain = "www.lierdalux.cn"
+
+        client = LierdaClient()
+        client.auth_data = AuthData(
+            userid=12345,
+            username="testuser",
+            domain=domain,
+            role=1,
+            parentid=0,
+            nat="CN",
+            phone="13800138000",
+        )
+
+        mock_response = {
+            "success": True,
+            "msg": "Success",
+            "data": [],
+        }
+
+        with aioresponses() as m:
+            m.post(
+                f"https://{domain}/action",
+                payload=mock_response,
+                status=200,
+            )
+
+            devices = await client.get_all_devices()
+
+            assert devices == []
+            assert len(devices) == 0
+
+        await client.close()
+
+    async def test_get_all_devices_not_authenticated_raises_error(self):
+        """Test get_all_devices raises LierdaApiError when not authenticated."""
+        client = LierdaClient()
+        # No auth_data set
+
+        with pytest.raises(LierdaApiError) as exc_info:
+            await client.get_all_devices()
+
+        assert "Not authenticated" in str(exc_info.value)
+
+        await client.close()
+
+    async def test_get_all_devices_api_failure_raises_error(self):
+        """Test get_all_devices raises LierdaApiError on API failure."""
+        domain = "www.lierdalux.cn"
+
+        client = LierdaClient()
+        client.auth_data = AuthData(
+            userid=12345,
+            username="testuser",
+            domain=domain,
+            role=1,
+            parentid=0,
+            nat="CN",
+            phone="13800138000",
+        )
+
+        mock_response = {
+            "success": False,
+            "msg": "Failed to retrieve devices",
+            "data": None,
+        }
+
+        with aioresponses() as m:
+            m.post(
+                f"https://{domain}/action",
+                payload=mock_response,
+                status=200,
+            )
+
+            with pytest.raises(LierdaApiError) as exc_info:
+                await client.get_all_devices()
+
+            assert "Failed to retrieve devices" in str(exc_info.value)
+
+        await client.close()
+
+    async def test_set_device_attribute_success(self):
+        """Test set_device_attribute successfully controls device."""
+        domain = "www.lierdalux.cn"
+
+        client = LierdaClient()
+        client.auth_data = AuthData(
+            userid=12345,
+            username="testuser",
+            domain=domain,
+            role=1,
+            parentid=0,
+            nat="CN",
+            phone="13800138000",
+        )
+
+        mock_response = {
+            "success": True,
+            "msg": "Command sent successfully",
+            "data": None,
+        }
+
+        with aioresponses() as m:
+            m.post(
+                f"https://{domain}/action",
+                payload=mock_response,
+                status=200,
+            )
+
+            # Should not raise any errors
+            await client.set_device_attribute(
+                device_id=1,
+                mac_id="AA:BB:CC:DD:EE:FF",
+                ddc_mac="DDC123",
+                attribute="POWER",
+                value="ON",
+            )
+
+        await client.close()
+
+    async def test_set_device_attribute_failure_raises_error(self):
+        """Test set_device_attribute raises LierdaApiError on failure."""
+        domain = "www.lierdalux.cn"
+
+        client = LierdaClient()
+        client.auth_data = AuthData(
+            userid=12345,
+            username="testuser",
+            domain=domain,
+            role=1,
+            parentid=0,
+            nat="CN",
+            phone="13800138000",
+        )
+
+        mock_response = {
+            "success": False,
+            "msg": "Failed to send command",
+            "data": None,
+        }
+
+        with aioresponses() as m:
+            m.post(
+                f"https://{domain}/action",
+                payload=mock_response,
+                status=200,
+            )
+
+            with pytest.raises(LierdaApiError) as exc_info:
+                await client.set_device_attribute(
+                    device_id=1,
+                    mac_id="AA:BB:CC:DD:EE:FF",
+                    ddc_mac="DDC123",
+                    attribute="POWER",
+                    value="ON",
+                )
+
+            assert "Failed to send command" in str(exc_info.value)
+
+        await client.close()
+
+    async def test_set_device_attribute_not_authenticated_raises_error(self):
+        """Test set_device_attribute raises LierdaApiError when not authenticated."""
+        client = LierdaClient()
+        # No auth_data set
+
+        with pytest.raises(LierdaApiError) as exc_info:
+            await client.set_device_attribute(
+                device_id=1,
+                mac_id="AA:BB:CC:DD:EE:FF",
+                ddc_mac="DDC123",
+                attribute="POWER",
+                value="ON",
+            )
+
+        assert "Not authenticated" in str(exc_info.value)
+
+        await client.close()
+
+    async def test_get_all_devices_sends_correct_payload(self):
+        """Test get_all_devices sends correct request payload."""
+        from yarl import URL
+
+        domain = "www.lierdalux.cn"
+
+        client = LierdaClient()
+        client.auth_data = AuthData(
+            userid=12345,
+            username="testuser",
+            domain=domain,
+            role=1,
+            parentid=0,
+            nat="CN",
+            phone="13800138000",
+        )
+
+        mock_response = {
+            "success": True,
+            "msg": "Success",
+            "data": [],
+        }
+
+        with aioresponses() as m:
+            m.post(
+                f"https://{domain}/action",
+                payload=mock_response,
+                status=200,
+            )
+
+            await client.get_all_devices()
+
+            # Verify request payload
+            assert len(m.requests) == 1
+            request_key = ("POST", URL(f"https://{domain}/action"))
+            assert request_key in m.requests
+
+            requests_list = m.requests[request_key]
+            assert len(requests_list) == 1
+            request_call = requests_list[0]
+
+            expected_payload = {
+                "pn": "getDeviceListByUserId",
+                "userid": 12345,
+                "uid": 12345,
+                "role": 1,
+                "ibmsuserid": 12345,
+                "ibmsuserole": 1,
+                "ibmsparentid": 0,
+                "ibmsnat": "CN",
+            }
+            assert request_call.kwargs["json"] == expected_payload
+
+        await client.close()
+
+    async def test_set_device_attribute_sends_correct_cmdstr_payload(self):
+        """Test set_device_attribute sends correctly formatted cmdStr."""
+        from yarl import URL
+
+        domain = "www.lierdalux.cn"
+
+        client = LierdaClient()
+        client.auth_data = AuthData(
+            userid=12345,
+            username="testuser",
+            domain=domain,
+            role=1,
+            parentid=0,
+            nat="CN",
+            phone="13800138000",
+        )
+
+        def verify_request(url, **kwargs):
+            """Callback to verify the request structure."""
+            # Verify request structure
+            data = kwargs.get("json", {})
+            assert data["pn"] == "cmd"
+            assert "cmdStr" in data
+
+            # Parse and verify cmdStr JSON
+            cmd_str = json.loads(data["cmdStr"])
+            assert cmd_str["sourceId"] == 12345  # userid
+            assert cmd_str["serialNum"] == "MAC789"  # mac_id
+            assert cmd_str["requestType"] == "control"
+            assert cmd_str["id"] == 999  # device_id (int)
+            assert cmd_str["ddcId"] == "DDC456"  # ddc_mac
+            assert cmd_str["attributes"] == [{"KY1": "ON"}]  # list of dicts
+
+        mock_response = {
+            "success": True,
+            "msg": "Command sent successfully",
+            "data": None,
+        }
+
+        with aioresponses() as m:
+            m.post(
+                f"https://{domain}/action",
+                payload=mock_response,
+                status=200,
+                callback=verify_request,
+            )
+
+            await client.set_device_attribute(
+                device_id=999,
+                mac_id="MAC789",
+                ddc_mac="DDC456",
+                attribute="KY1",
+                value="ON",
+            )
+
         await client.close()
