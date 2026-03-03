@@ -3,6 +3,7 @@ name = "hass-lierda-iot"
 version = "2.0.0"
 description = "Lierda IoT Home Assistant Integration"
 authors = ["qcgzxw"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
@@ -11,7 +12,7 @@ aiohttp = "^3.9.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
-pytest-homeassistant = "^0.13.0"
+pytest-homeassistant-custom-component = "^0.13.0"
 pytest-aiohttp = "^1.0.0"
 pytest-cov = "^4.1.0"
 mypy = "^1.8.0"
