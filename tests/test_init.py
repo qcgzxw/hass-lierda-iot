@@ -124,3 +124,65 @@ class TestAsyncSetupEntry:
 
         # Verify coordinator was created
         assert "coordinator" in hass.data["lierda_iot"]["test_entry"]
+
+
+@pytest.mark.asyncio
+class TestAsyncUnloadEntry:
+    """Tests for async_unload_entry function."""
+
+    async def test_async_unload_entry(self):
+        """Test unloading config entry."""
+        from custom_components.lierda_iot import async_setup_entry, async_unload_entry
+
+        # Create mock Home Assistant instance
+        hass = MagicMock()
+        hass.data = {}
+
+        # Mock config_entries
+        hass.config_entries = MagicMock()
+        hass.config_entries.async_forward_entry_setups = AsyncMock(return_value=True)
+        hass.config_entries.async_unload_platforms = AsyncMock(return_value=True)
+
+        # Create config entry with valid auth_data
+        auth_data_dict = {
+            "userid": 12345,
+            "username": "test@example.com",
+            "domain": "www.lierdalux.cn",
+            "role": 1,
+            "parentid": 0,
+            "nat": "CN",
+            "phone": "13800138000",
+        }
+
+        config_entry = MagicMock(spec=ConfigEntry)
+        config_entry.entry_id = "test_entry"
+        config_entry.domain = "lierda_iot"
+        config_entry.title = "Test Entry"
+        config_entry.data = {
+            "auth_data": auth_data_dict,
+            "refresh_interval": 300,
+        }
+        config_entry.version = 3
+
+        # Setup first
+        await async_setup_entry(hass, config_entry)
+
+        # Verify setup succeeded
+        assert "test_entry" in hass.data["lierda_iot"]
+
+        # Get coordinator reference and mock its async_shutdown
+        coordinator = hass.data["lierda_iot"]["test_entry"]["coordinator"]
+        coordinator.async_shutdown = AsyncMock()
+
+        # Now unload
+        result = await async_unload_entry(hass, config_entry)
+
+        # Verify unload succeeded
+        assert result is True
+        assert "test_entry" not in hass.data["lierda_iot"]
+
+        # Verify coordinator was shut down
+        coordinator.async_shutdown.assert_called_once()
+
+        # Verify async_unload_platforms was called
+        hass.config_entries.async_unload_platforms.assert_called_once()

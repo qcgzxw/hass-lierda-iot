@@ -147,9 +147,17 @@ async def refresh_device_statuses(hass: HomeAssistant) -> None:
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    for device_id, device in hass.data[DOMAIN][LIERDA_DEVICES].items():
-        device.close()
-    return await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
+
+    if unload_ok:
+        entry_data = hass.data[DOMAIN].get(config_entry.entry_id)
+        if entry_data:
+            coordinator = entry_data.get("coordinator")
+            if coordinator:
+                await coordinator.async_shutdown()
+        hass.data[DOMAIN].pop(config_entry.entry_id, None)
+
+    return unload_ok
 
 
 async def async_reload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> None:
