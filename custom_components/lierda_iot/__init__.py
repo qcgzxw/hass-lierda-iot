@@ -22,9 +22,54 @@ async def async_setup(hass: HomeAssistant, config_entry: dict):
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old entry data to new version."""
+    _LOGGER.info("Migrating from version %s to %s", config_entry.version, ENTRY_VERSION)
+
     if config_entry.version == 1:
-        _LOGGER.info("Migrating from version 1 to 2")
-    return True
+        # v1 -> v3: Remove devices field, rename user_auth_data -> auth_data
+        new_data = {**config_entry.data}
+
+        # Remove devices field
+        if CONF_KEY_DEVICES in new_data:
+            new_data.pop(CONF_KEY_DEVICES)
+
+        # Rename user_auth_data to auth_data
+        if CONF_KEY_USER_AUTH_DATA in new_data:
+            new_data["auth_data"] = new_data.pop(CONF_KEY_USER_AUTH_DATA)
+
+        # Add domain from auth_data
+        if "auth_data" in new_data and "domain" in new_data["auth_data"]:
+            new_data["domain"] = new_data["auth_data"]["domain"]
+
+        # Update config entry
+        hass.config_entries.async_update_entry(config_entry, data=new_data, version=ENTRY_VERSION)
+        _LOGGER.info("Migration to version %s successful", ENTRY_VERSION)
+        return True
+
+    if config_entry.version == 2:
+        # v2 -> v3: Rename user_auth_data -> auth_data
+        new_data = {**config_entry.data}
+
+        # Rename user_auth_data to auth_data
+        if CONF_KEY_USER_AUTH_DATA in new_data:
+            new_data["auth_data"] = new_data.pop(CONF_KEY_USER_AUTH_DATA)
+
+        # Add domain from auth_data
+        if "auth_data" in new_data and "domain" in new_data["auth_data"]:
+            new_data["domain"] = new_data["auth_data"]["domain"]
+
+        # Update config entry
+        hass.config_entries.async_update_entry(config_entry, data=new_data, version=ENTRY_VERSION)
+        _LOGGER.info("Migration to version %s successful", ENTRY_VERSION)
+        return True
+
+    # Already at the latest version
+    if config_entry.version == ENTRY_VERSION:
+        return True
+
+    # Unknown version
+    _LOGGER.error("Unknown config entry version: %s", config_entry.version)
+    return False
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:

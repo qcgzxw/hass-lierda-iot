@@ -5,6 +5,7 @@ BAND = "Lierda iot"
 DOMAIN = "lierda_iot"
 VERSION = "1.1.0"
 ENTRIES_VERSION = 2
+ENTRY_VERSION = 3
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
