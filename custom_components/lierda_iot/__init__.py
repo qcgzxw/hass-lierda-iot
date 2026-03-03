@@ -1,13 +1,25 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import *
-from .lierda.core.lierda_api import LierdaApi
-from .lierda.devices import device_selector
+from .api import LierdaClient
+from .api.exceptions import LierdaApiError
+from .const import (
+    DOMAIN,
+    PLATFORMS,
+    ENTRY_VERSION,
+    DEFAULT_REFRESH_INTERVAL,
+    CONF_KEY_DEVICES,
+    CONF_KEY_USER_AUTH_DATA,
+    CONF_KEY_REFRESH_INTERVAL,
+)
+from .coordinator import LierdaDataUpdateCoordinator
+from .models.auth import AuthData
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,37 +85,39 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
 
 async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
-    """Set up Lierda iot from a config entry."""
-    _LOGGER.debug(config_entry.data)
-    if config_entry.entry_id in hass.data[DOMAIN][CONF_RELOAD_FLAG]:
-        await async_reload_entry(hass, config_entry)
+    """Set up Lierda IoT from a config entry."""
+    # Initialize hass.data structure
+    hass.data.setdefault(DOMAIN, {})
 
-    devices = {}
-    hass.data[DOMAIN][CONF_KEY_USER_AUTH_DATA] = config_entry.data.get(CONF_KEY_USER_AUTH_DATA)
-    hass.data[DOMAIN][CONF_KEY_REFRESH_INTERVAL] = config_entry.data.get(CONF_KEY_REFRESH_INTERVAL,
-                                                                         DEFAULT_REFRESH_INTERVAL)
+    # Get auth data
+    auth_data_dict = config_entry.data.get("auth_data", {})
+    if not auth_data_dict:
+        _LOGGER.error("No auth data in config entry")
+        return False
 
-    async def setup_entities(device_ids: list[str]) -> None:
-        for device_id in device_ids:
-            device = device_selector(
-                auth_data=config_entry.data[CONF_KEY_USER_AUTH_DATA],
-                **config_entry.data[CONF_KEY_DEVICES][device_id]
-            )
-            if device is not None:
-                device.set_refresh_interval(hass.data[DOMAIN][CONF_KEY_REFRESH_INTERVAL])
-                device.open()
-                devices[device_id] = device
+    # Create auth data object
+    auth_data = AuthData.from_api_response(auth_data_dict)
 
-    if config_entry.data.get(CONF_KEY_DEVICES):
-        await setup_entities(config_entry.data[CONF_KEY_DEVICES].keys())
+    # Create client
+    client = LierdaClient()
+    client._auth_data = auth_data
 
-        if not devices:
-            _LOGGER.error("No devices were set up. Check your configuration.")
-            return False
+    # Create coordinator
+    refresh_interval = config_entry.data.get("refresh_interval", DEFAULT_REFRESH_INTERVAL)
+    coordinator = LierdaDataUpdateCoordinator(
+        hass=hass,
+        client=client,
+        update_interval=timedelta(seconds=refresh_interval),
+    )
 
-        hass.data[DOMAIN][LIERDA_DEVICES] = devices
+    # Store coordinator and client
+    hass.data[DOMAIN][config_entry.entry_id] = {
+        "coordinator": coordinator,
+        "client": client,
+    }
 
-        await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+    # Forward platform setups
+    await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
 
     return True
 
