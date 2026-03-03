@@ -88,11 +88,11 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
         if self.coordinator.data:
             device = self.coordinator.data.get(self.device.id)
             if device:
-                power = device.get_attribute("power")
-                # Power can be "ON"/"OFF" string or boolean
-                if isinstance(power, str):
-                    return power == "ON"
-                return bool(power)
+                # Get the attribute value using entity_key (e.g., "ky1" -> "KY1")
+                attribute_name = self.entity_key.upper()
+                value = device.get_attribute(attribute_name)
+                if value:
+                    return value == "ON"
         return False
 
     @property
@@ -118,15 +118,15 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
         try:
+            # Use uppercase entity_key (e.g., "ky1" -> "KY1")
+            attribute_name = self.entity_key.upper()
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
                 str(self.device.ddc_id),
-                "power",
+                attribute_name,
                 "ON",
             )
-
-            # Request coordinator refresh
             await self.coordinator.async_request_refresh()
         except Exception as err:
             _LOGGER.error("Failed to turn on switch %s: %s", self.device.id, err)
@@ -134,15 +134,15 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
         try:
+            # Use uppercase entity_key (e.g., "ky1" -> "KY1")
+            attribute_name = self.entity_key.upper()
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
                 str(self.device.ddc_id),
-                "power",
+                attribute_name,
                 "OFF",
             )
-
-            # Request coordinator refresh
             await self.coordinator.async_request_refresh()
         except Exception as err:
             _LOGGER.error("Failed to turn off switch %s: %s", self.device.id, err)

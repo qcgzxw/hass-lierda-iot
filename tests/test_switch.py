@@ -32,7 +32,7 @@ class TestSwitchPlatform:
             name="Test Switch",
             type=53,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"power": "ON", "LIVE": "ON"},
+            attributes={"SWI": "0x01", "KY1": "ON", "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
@@ -92,7 +92,7 @@ class TestSwitchPlatform:
             name="Test Switch",
             type=53,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"power": "OFF", "LIVE": "ON"},
+            attributes={"SWI": "0x00", "KY1": "OFF", "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
@@ -109,7 +109,7 @@ class TestSwitchPlatform:
         switch = LierdaSwitch(
             mock_coordinator,
             mock_device,
-            "switch_1",
+            "ky1",
             {"type": "switch", "name": "开关1"},
             mock_client,
         )
@@ -119,7 +119,9 @@ class TestSwitchPlatform:
 
         # Turn on
         await switch.async_turn_on()
-        mock_client.set_device_attribute.assert_called()
+        mock_client.set_device_attribute.assert_called_with(
+            12345, "AA:BB:CC:DD:EE:FF", "100", "KY1", "ON"
+        )
         mock_coordinator.async_request_refresh.assert_called_once()
 
         # Turn off
