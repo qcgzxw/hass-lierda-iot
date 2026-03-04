@@ -28,8 +28,6 @@ CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
 CONF_LUX_DOMAIN = "lux_domain"
 CONF_REFRESH_INTERVAL = "refresh_interval"
-CONF_FILTER_DEVICE = "filter_device"
-CONF_REMEMBER_ME = "remember_me"
 
 CONF_KEY_VERSION = "version"
 CONF_KEY_USERNAME = "username"
@@ -37,9 +35,5 @@ CONF_KEY_PASSWORD = "password"
 CONF_KEY_USER_AUTH_DATA = "user_auth_data"
 CONF_KEY_DEVICES = "devices"
 CONF_KEY_REFRESH_INTERVAL = "refresh_interval"
-
-CONF_RELOAD_FLAG = "flag_reload"
-
-LIERDA_DEVICES = "lierda_devices"
 
 DEFAULT_REFRESH_INTERVAL = 300

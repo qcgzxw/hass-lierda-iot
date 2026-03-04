@@ -1,31 +1,37 @@
+"""Device type configurations for Lierda IoT."""
+
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
 from homeassistant.components.cover import CoverDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfElectricPotential, Platform, PERCENTAGE
 
-from .lierda.devices import *
-from .lierda.devices.curtain import DeviceAttributes as CurtainAttributes
-from .lierda.devices.door import DeviceAttributes as DoorAttributes
-from .lierda.devices.light import DeviceAttributes as LightAttributes
-from .lierda.devices.switch import DeviceAttributes as SwitchAttributes
+# Device type constants
+TYPE_SS_DOR = 10  # Door sensor
+TYPE_CL_R1M = 26  # Light
+TYPE_SW_KY1 = 53  # 1-gang switch
+TYPE_SW_KY2 = 54  # 2-gang switch
+TYPE_SW_KY3 = 55  # 3-gang switch
+TYPE_SW_KY4 = 56  # 4-gang switch
+TYPE_SW_KY6 = 58  # 6-gang switch
+TYPE_WD_RXJ = 5   # Curtain
 
 LIERDA_DEVICES = {
     TYPE_SS_DOR: {
-        "name": DoorAttributes.name,
+        "name": "door",
         "entities": {
-            DoorAttributes.door: {
+            "door": {
                 "name": "Door",
                 "type": Platform.BINARY_SENSOR,
                 "device_class": BinarySensorDeviceClass.DOOR,
             },
-            DoorAttributes.battery_voltage: {
+            "battery_voltage": {
                 "name": "Battery Voltage",
                 "type": Platform.SENSOR,
                 "device_class": SensorDeviceClass.VOLTAGE,
                 "unit": UnitOfElectricPotential.VOLT,
                 "state_class": SensorStateClass.MEASUREMENT,
             },
-            DoorAttributes.battery_percentage: {
+            "battery_percentage": {
                 "name": "Battery Percentage",
                 "type": Platform.SENSOR,
                 "device_class": SensorDeviceClass.BATTERY,
@@ -35,7 +41,7 @@ LIERDA_DEVICES = {
         }
     },
     TYPE_CL_R1M: {
-        "name": LightAttributes.name,
+        "name": "light",
         "entities": {
             'light': {
                 "type": Platform.LIGHT,
@@ -44,98 +50,98 @@ LIERDA_DEVICES = {
         }
     },
     TYPE_SW_KY1: {
-        "name": SwitchAttributes.switch1_name,
+        "name": "1键开关",
         "entities": {
-            SwitchAttributes.switch_1: {
+            "ky1": {
                 "name": "开关1",
                 "type": Platform.SWITCH
             },
         }
     },
     TYPE_SW_KY2: {
-        "name": SwitchAttributes.switch2_name,
+        "name": "2键开关",
         "entities": {
-            SwitchAttributes.switch_1: {
+            "ky1": {
                 "name": "开关1",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_2: {
+            "ky2": {
                 "name": "开关2",
                 "type": Platform.SWITCH
             },
         }
     },
     TYPE_SW_KY3: {
-        "name": SwitchAttributes.switch3_name,
+        "name": "3键开关",
         "entities": {
-            SwitchAttributes.switch_1: {
+            "ky1": {
                 "name": "开关1",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_2: {
+            "ky2": {
                 "name": "开关2",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_3: {
+            "ky3": {
                 "name": "开关3",
                 "type": Platform.SWITCH
             },
         }
     },
     TYPE_SW_KY4: {
-        "name": SwitchAttributes.switch4_name,
+        "name": "4键开关",
         "entities": {
-            SwitchAttributes.switch_1: {
+            "ky1": {
                 "name": "开关1",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_2: {
+            "ky2": {
                 "name": "开关2",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_3: {
+            "ky3": {
                 "name": "开关3",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_4: {
+            "ky4": {
                 "name": "开关4",
                 "type": Platform.SWITCH
             },
         }
     },
     TYPE_SW_KY6: {
-        "name": SwitchAttributes.switch6_name,
+        "name": "6键开关",
         "entities": {
-            SwitchAttributes.switch_1: {
+            "ky1": {
                 "name": "开关1",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_2: {
+            "ky2": {
                 "name": "开关2",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_3: {
+            "ky3": {
                 "name": "开关3",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_4: {
+            "ky4": {
                 "name": "开关4",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_5: {
+            "ky5": {
                 "name": "开关5",
                 "type": Platform.SWITCH
             },
-            SwitchAttributes.switch_6: {
+            "ky6": {
                 "name": "开关6",
                 "type": Platform.SWITCH
             },
         }
     },
     TYPE_WD_RXJ: {
-        "name": CurtainAttributes.name,
+        "name": "curtain",
         "entities": {
-            CurtainAttributes.name: {
+            "curtain": {
                 "type": Platform.COVER,
                 "device_class": CoverDeviceClass.CURTAIN,
                 "icon": "mdi:curtains"
