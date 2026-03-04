@@ -5,15 +5,16 @@ from homeassistant.components.cover import CoverDeviceClass
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import UnitOfElectricPotential, Platform, PERCENTAGE
 
-# Device type constants
-TYPE_SS_DOR = 10  # Door sensor
-TYPE_CL_R1M = 26  # Light
-TYPE_SW_KY1 = 53  # 1-gang switch
-TYPE_SW_KY2 = 54  # 2-gang switch
-TYPE_SW_KY3 = 55  # 3-gang switch
-TYPE_SW_KY4 = 56  # 4-gang switch
-TYPE_SW_KY6 = 58  # 6-gang switch
-TYPE_WD_RXJ = 5   # Curtain
+from .const import (
+    TYPE_SS_DOR,
+    TYPE_CL_R1M,
+    TYPE_SW_KY1,
+    TYPE_SW_KY2,
+    TYPE_SW_KY3,
+    TYPE_SW_KY4,
+    TYPE_SW_KY6,
+    TYPE_WD_RXJ,
+)
 
 LIERDA_DEVICES = {
     TYPE_SS_DOR: {

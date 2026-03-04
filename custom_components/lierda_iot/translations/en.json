@@ -8,8 +8,6 @@
           "username": "username",
           "password": "password",
           "refresh_interval": "refresh interval",
-          "filter_device": "filter device",
-          "remember_me": "remember me",
           "lux_domain": "lux domain"
         }
       }
@@ -17,6 +15,8 @@
     "error": {
       "cannot_connect": "cannot connect",
       "invalid_auth": "invalid auth",
+      "invalid_interval": "refresh interval must be at least 10 seconds",
+      "api_error": "API error",
       "unknown": "unknown"
     },
     "abort": {

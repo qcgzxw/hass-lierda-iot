@@ -97,7 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
 
     # Create client
     client = LierdaClient()
-    client._auth_data = auth_data
+    client.auth_data = auth_data
 
     # Create coordinator
     refresh_interval = config_entry.data.get("refresh_interval", DEFAULT_REFRESH_INTERVAL)

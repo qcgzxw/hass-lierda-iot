@@ -14,6 +14,7 @@ from homeassistant.exceptions import HomeAssistantError
 from .const import *
 from .api import LierdaClient
 from .api.exceptions import LierdaApiError, LierdaAuthError, LierdaConnectionError, LierdaTimeoutError
+from .models.auth import AuthData
 
 try:
     from homeassistant.helpers.json import save_json
@@ -64,19 +65,6 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def _load_login_config(self):
         record_file = self.hass.config.path(f"{STORAGE_PATH}/login.json")
-        return load_json(record_file, default={})
-
-    '''deprecated'''
-
-    def _save_devices_config(self, data: list[dict]):
-        os.makedirs(self.hass.config.path(STORAGE_PATH), exist_ok=True)
-        record_file = self.hass.config.path(f"{STORAGE_PATH}/devices.json")
-        save_json(record_file, data)
-
-    '''deprecated'''
-
-    def _load_devices_config(self):
-        record_file = self.hass.config.path(f"{STORAGE_PATH}/devices.json")
         return load_json(record_file, default={})
 
     async def validate_login(self, username: str, password: str, domain: str, save_account: bool) -> None:
@@ -149,7 +137,6 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
 
             # Manually set auth_data from stored config
             auth_data_dict = self.config[CONF_KEY_USER_AUTH_DATA]
-            from .models.auth import AuthData
             client.auth_data = AuthData(
                 userid=auth_data_dict["userid"],
                 username=auth_data_dict["username"],
@@ -176,8 +163,6 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                 }
                 for device in devices
             ]
-
-            self._save_devices_config(device_list)
 
             # Close client session
             await client.close()
