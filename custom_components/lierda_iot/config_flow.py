@@ -12,7 +12,8 @@ from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import *
-from .lierda.core.lierda_api import LierdaAuth, LierdaApi
+from .api import LierdaClient
+from .api.exceptions import LierdaApiError, LierdaAuthError, LierdaConnectionError, LierdaTimeoutError
 
 try:
     from homeassistant.helpers.json import save_json
@@ -48,8 +49,6 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = ENTRIES_VERSION
 
     def __init__(self):
-        self.api = None
-        self.auth = None
         self.config = {}
 
     @staticmethod
@@ -84,9 +83,22 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         try:
             if username is None or password is None:
                 raise InvalidAuth
-            self.auth = LierdaAuth(username, password, domain)
-            await self.auth.login()
-            self.config[CONF_KEY_USER_AUTH_DATA] = self.auth.data
+
+            # Create client and login
+            client = LierdaClient()
+            auth_data = await client.login(username, password, domain)
+
+            # Store auth data in config
+            self.config[CONF_KEY_USER_AUTH_DATA] = {
+                "userid": auth_data.userid,
+                "username": auth_data.username,
+                "domain": auth_data.domain,
+                "role": auth_data.role,
+                "parentid": auth_data.parentid,
+                "nat": auth_data.nat,
+                "phone": auth_data.phone,
+            }
+
             if save_account:
                 self._save_login_config({
                     CONF_KEY_USERNAME: username,
@@ -94,7 +106,20 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_KEY_USER_AUTH_DATA: self.config[CONF_KEY_USER_AUTH_DATA],
                 })
 
+            # Close client session
+            await client.close()
+
+        except LierdaAuthError:
+            if save_account:
+                self._save_login_config({
+                    CONF_KEY_USERNAME: username,
+                    CONF_KEY_PASSWORD: password,
+                })
+            raise InvalidAuth
+        except (LierdaConnectionError, LierdaTimeoutError):
+            raise CannotConnect
         except Exception as exception:
+            _LOGGER.exception("Unexpected error during login: %s", exception)
             if save_account:
                 self._save_login_config({
                     CONF_KEY_USERNAME: username,
@@ -119,13 +144,52 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def get_user_device_list(self) -> list[dict]:
         try:
-            self.api = LierdaApi(**self.auth.data)
-            resp = await self.api.get_device_list_by_user_id()
-            device_list = resp['data']
+            # Create client and set auth data
+            client = LierdaClient()
+
+            # Manually set auth_data from stored config
+            auth_data_dict = self.config[CONF_KEY_USER_AUTH_DATA]
+            from .models.auth import AuthData
+            client.auth_data = AuthData(
+                userid=auth_data_dict["userid"],
+                username=auth_data_dict["username"],
+                domain=auth_data_dict["domain"],
+                role=auth_data_dict["role"],
+                parentid=auth_data_dict["parentid"],
+                nat=auth_data_dict["nat"],
+                phone=auth_data_dict["phone"],
+            )
+
+            # Get devices
+            devices = await client.get_all_devices()
+
+            # Convert Device objects to dicts for storage
+            device_list = [
+                {
+                    "id": device.id,
+                    "name": device.name,
+                    "macId": device.mac_id,
+                    "ddcMac": device.ddc_mac,
+                    "type": device.device_type,
+                    "roomName": device.room_name,
+                    "online": device.online,
+                }
+                for device in devices
+            ]
+
             self._save_devices_config(device_list)
+
+            # Close client session
+            await client.close()
+
             return device_list
+        except (LierdaConnectionError, LierdaTimeoutError):
+            raise CannotConnect
+        except LierdaApiError as exception:
+            _LOGGER.exception("API error while fetching devices: %s", exception)
+            raise ApiError(str(exception))
         except Exception as exception:
-            _LOGGER.exception(exception)
+            _LOGGER.exception("Unexpected error while fetching devices: %s", exception)
             raise ApiError(str(exception))
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
