@@ -35,7 +35,6 @@ async def async_setup_entry(
     for device_id, device in coordinator.data.items():
         # Get device type configuration
         if device.type not in LIERDA_DEVICES:
-            _LOGGER.debug("Unknown device type %s for device %s", device.type, device_id)
             continue
 
         device_config = LIERDA_DEVICES[device.type]
@@ -88,11 +87,11 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
 
         # Set supported features
         supported_features = CoverEntityFeature(0)
-        if device.get_attribute("window") is not None:
+        if device.get_attribute("WIN") is not None:
             supported_features |= CoverEntityFeature.OPEN
             supported_features |= CoverEntityFeature.CLOSE
             supported_features |= CoverEntityFeature.STOP
-        if device.get_attribute("level") is not None:
+        if device.get_attribute("LEV") is not None:
             supported_features |= CoverEntityFeature.SET_POSITION
         self._attr_supported_features = supported_features
 
@@ -102,7 +101,7 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
         if self.coordinator.data:
             device = self.coordinator.data.get(self.device.id)
             if device:
-                window = device.get_attribute("window")
+                window = device.get_attribute("WIN")
                 if window is None or window == "STOP":
                     return None
                 if window == "CLOSE":
@@ -116,7 +115,7 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
         if self.coordinator.data:
             device = self.coordinator.data.get(self.device.id)
             if device:
-                level = device.get_attribute("level")
+                level = device.get_attribute("LEV")
                 if level is not None:
                     return int(level)
         return None
@@ -127,9 +126,10 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
         return {
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
-            "manufacturer": "Lierda",
+            "manufacturer": "Lierda iot",
             "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
+            "serial_number": str(self.device.id),
         }
 
     @property
@@ -147,8 +147,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
-                "window",
+                self.device.ddc_mac,
+                "WIN",
                 "OPEN",
             )
             await self.coordinator.async_request_refresh()
@@ -161,8 +161,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
-                "window",
+                self.device.ddc_mac,
+                "WIN",
                 "CLOSE",
             )
             await self.coordinator.async_request_refresh()
@@ -175,8 +175,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
-                "window",
+                self.device.ddc_mac,
+                "WIN",
                 "STOP",
             )
             await self.coordinator.async_request_refresh()
@@ -193,8 +193,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
-                "level",
+                self.device.ddc_mac,
+                "LEV",
                 str(position),
             )
             await self.coordinator.async_request_refresh()

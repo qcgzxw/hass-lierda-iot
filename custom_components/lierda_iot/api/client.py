@@ -158,7 +158,7 @@ class LierdaClient:
             "pn": "getDeviceListByUserId",
             "userid": self.auth_data.userid,
             "uid": self.auth_data.userid,
-            "role": self.auth_data.role,
+            "role": self.auth_data.userid,  # role字段传userid，参照master
             "ibmsuserid": self.auth_data.userid,
             "ibmsuserole": self.auth_data.role,
             "ibmsparentid": self.auth_data.parentid,
@@ -235,13 +235,14 @@ class LierdaClient:
             raise LierdaApiError("Not authenticated. Please login first.")
 
         # Build command string
+        import time
         cmd_str = json.dumps({
-            "sourceId": self.auth_data.userid,
-            "serialNum": mac_id,
-            "requestType": "control",
-            "id": device_id,
+            "sourceId": str(self.auth_data.userid),
+            "serialNum": int(time.time()) % 10000,
+            "requestType": "cmd",
+            "id": mac_id,
             "ddcId": ddc_mac,
-            "attributes": [{attribute: value}],
+            "attributes": {attribute: value},
         })
 
         # Prepare request payload

@@ -48,12 +48,26 @@ class LierdaDataUpdateCoordinator(DataUpdateCoordinator[dict[int, Device]]):
         Raises:
             UpdateFailed: If API request fails
         """
+        from custom_components.lierda_iot.lierda_devices import LIERDA_DEVICES
+
         try:
             # Fetch all devices from API
-            devices = await self.client.get_all_devices()
+            all_devices = await self.client.get_all_devices()
 
-            # Convert list to dict keyed by device ID
-            device_dict = {device.id: device for device in devices}
+            device_dict = {}
+            for device in all_devices:
+                # Skip virtual/placeholder devices
+                if device.mac_id == "0000000000000000":
+                    _LOGGER.debug("Skipping virtual device %s (%s)", device.name, device.id)
+                    continue
+
+                # Check if device type is supported
+                if device.type not in LIERDA_DEVICES:
+                    # Only log once per fetch, rather than in every platform
+                    _LOGGER.debug("Unknown or unsupported device type %s for device %s", device.type, device.id)
+                    continue
+
+                device_dict[device.id] = device
 
             _LOGGER.debug("Updated %d devices", len(device_dict))
 

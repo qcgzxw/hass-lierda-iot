@@ -33,7 +33,6 @@ async def async_setup_entry(
     for device_id, device in coordinator.data.items():
         # Get device type configuration
         if device.type not in LIERDA_DEVICES:
-            _LOGGER.debug("Unknown device type %s for device %s", device.type, device_id)
             continue
 
         device_config = LIERDA_DEVICES[device.type]
@@ -89,7 +88,29 @@ class LierdaSensor(CoordinatorEntity[LierdaDataUpdateCoordinator], SensorEntity)
         if self.coordinator.data:
             device = self.coordinator.data.get(self.device.id)
             if device:
-                return device.get_attribute(self.entity_key)
+                # Map entity_key to actual API attribute names
+                attribute_mapping = {
+                    "battery_voltage": "BAT",
+                    "battery_percentage": "_BAT",
+                }
+
+                # Get the actual attribute name
+                attr_name = attribute_mapping.get(self.entity_key, self.entity_key.upper())
+                value = device.get_attribute(attr_name)
+
+                if value is None:
+                    return None
+
+                # Process value based on entity type
+                if self.entity_key == "battery_percentage":
+                    # Remove "%" suffix if present
+                    if isinstance(value, str) and value.endswith("%"):
+                        return int(value.removesuffix("%"))
+                    return int(value)
+                elif self.entity_key == "battery_voltage":
+                    return float(value)
+
+                return value
         return None
 
     @property
@@ -98,9 +119,10 @@ class LierdaSensor(CoordinatorEntity[LierdaDataUpdateCoordinator], SensorEntity)
         return {
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
-            "manufacturer": "Lierda",
+            "manufacturer": "Lierda iot",
             "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
+            "serial_number": str(self.device.id),
         }
 
     @property

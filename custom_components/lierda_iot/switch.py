@@ -35,7 +35,6 @@ async def async_setup_entry(
     for device_id, device in coordinator.data.items():
         # Get device type configuration
         if device.type not in LIERDA_DEVICES:
-            _LOGGER.debug("Unknown device type %s for device %s", device.type, device_id)
             continue
 
         device_config = LIERDA_DEVICES[device.type]
@@ -88,11 +87,28 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
         if self.coordinator.data:
             device = self.coordinator.data.get(self.device.id)
             if device:
-                # Get the attribute value using entity_key (e.g., "ky1" -> "KY1")
-                attribute_name = self.entity_key.upper()
-                value = device.get_attribute(attribute_name)
-                if value:
-                    return value == "ON"
+                # Get the SWI attribute (hex string like "0x03")
+                swi_value = device.get_attribute("SWI")
+                if swi_value is None:
+                    return False
+
+                # Parse the switch index from entity_key (e.g., "ky1" -> 1)
+                try:
+                    index = int(self.entity_key.removeprefix("ky"))
+                except (ValueError, AttributeError):
+                    return False
+
+                # Convert SWI hex string to integer
+                try:
+                    swi_int = int(swi_value, 16)
+                except (ValueError, TypeError):
+                    return False
+
+                # Check the bit corresponding to this switch
+                # Bit 0 = KY1, Bit 1 = KY2, etc.
+                light_mask = 1 << (index - 1)
+                return (swi_int & light_mask) != 0
+
         return False
 
     @property
@@ -101,9 +117,10 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
         return {
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
-            "manufacturer": "Lierda",
+            "manufacturer": "Lierda iot",
             "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
+            "serial_number": str(self.device.id),
         }
 
     @property
@@ -123,7 +140,7 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
+                self.device.ddc_mac,
                 attribute_name,
                 "ON",
             )
@@ -139,7 +156,7 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
+                self.device.ddc_mac,
                 attribute_name,
                 "OFF",
             )

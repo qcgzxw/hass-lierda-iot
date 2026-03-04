@@ -47,7 +47,7 @@ STEP_INIT_OPTIONS_DATA_SCHEMA = vol.Schema(
 class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Lierda auth."""
 
-    VERSION = ENTRIES_VERSION
+    VERSION = ENTRY_VERSION
 
     def __init__(self):
         self.config = {}
@@ -56,7 +56,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Get options flow for this handler."""
-        return LierdaConfigFlowHandler(config_entry)
+        return LierdaConfigFlowHandler()
 
     def _save_login_config(self, data: dict):
         os.makedirs(self.hass.config.path(STORAGE_PATH), exist_ok=True)
@@ -77,7 +77,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
             auth_data = await client.login(username, password, domain)
 
             # Store auth data in config
-            self.config[CONF_KEY_USER_AUTH_DATA] = {
+            self.config["auth_data"] = {
                 "userid": auth_data.userid,
                 "username": auth_data.username,
                 "domain": auth_data.domain,
@@ -91,7 +91,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._save_login_config({
                     CONF_KEY_USERNAME: username,
                     CONF_KEY_PASSWORD: password,
-                    CONF_KEY_USER_AUTH_DATA: self.config[CONF_KEY_USER_AUTH_DATA],
+                    "auth_data": self.config["auth_data"],
                 })
 
             # Close client session
@@ -136,7 +136,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
             client = LierdaClient()
 
             # Manually set auth_data from stored config
-            auth_data_dict = self.config[CONF_KEY_USER_AUTH_DATA]
+            auth_data_dict = self.config["auth_data"]
             client.auth_data = AuthData(
                 userid=auth_data_dict["userid"],
                 username=auth_data_dict["username"],
@@ -210,7 +210,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def _create_entry(self, user_input):
-        unique_id = f"{self.config[CONF_KEY_USER_AUTH_DATA]['userid']}@{LIERDA_API_LIST[user_input[CONF_LUX_DOMAIN]]}"
+        unique_id = f"{self.config['auth_data']['userid']}@{LIERDA_API_LIST[user_input[CONF_LUX_DOMAIN]]}"
         _LOGGER.debug(unique_id)
         await self.async_set_unique_id(unique_id)
 
@@ -245,23 +245,30 @@ def schema_defaults(schema, dps_list=None, **defaults):
 class LierdaConfigFlowHandler(OptionsFlow):
     """Handle a config flow for Lierda iot options."""
 
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
-
     async def async_step_init(self, user_input=None):
-        old_refresh_interval = self.hass.data[DOMAIN][CONF_KEY_REFRESH_INTERVAL] \
-            if CONF_KEY_REFRESH_INTERVAL in self.hass.data[DOMAIN] \
-            else DEFAULT_REFRESH_INTERVAL
+        """Handle options flow init."""
+        # Get current refresh interval from config entry
+        old_refresh_interval = self.config_entry.data.get(
+            CONF_KEY_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL
+        )
         defaults = {CONF_REFRESH_INTERVAL: old_refresh_interval}
 
         if user_input is not None:
+            from datetime import timedelta
             refresh_interval = user_input.get(CONF_REFRESH_INTERVAL, old_refresh_interval)
-            self.hass.data[DOMAIN][CONF_REFRESH_INTERVAL] = refresh_interval
 
-            for device_id, device in self.hass.data[DOMAIN][LIERDA_DEVICES].items():
-                device.set_refresh_interval(refresh_interval)
+            # Update coordinator's update interval if it exists
+            entry_id = self.config_entry.entry_id
+            if DOMAIN in self.hass.data and entry_id in self.hass.data[DOMAIN]:
+                coordinator = self.hass.data[DOMAIN][entry_id].get("coordinator")
+                if coordinator:
+                    coordinator.update_interval = timedelta(seconds=refresh_interval)
 
-            return self.async_create_entry(title="init", data={})
+            # Update config entry with new refresh interval
+            new_data = {**self.config_entry.data, CONF_KEY_REFRESH_INTERVAL: refresh_interval}
+            self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
+
+            return self.async_create_entry(title="", data=user_input)
 
         return self.async_show_form(
             step_id="init",

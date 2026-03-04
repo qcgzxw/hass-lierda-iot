@@ -17,6 +17,7 @@ from .const import (
     CONF_KEY_DEVICES,
     CONF_KEY_USER_AUTH_DATA,
     CONF_KEY_REFRESH_INTERVAL,
+    LIERDA_LUX_URL,
 )
 from .coordinator import LierdaDataUpdateCoordinator
 from .models.auth import AuthData
@@ -46,9 +47,14 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         if CONF_KEY_USER_AUTH_DATA in new_data:
             new_data["auth_data"] = new_data.pop(CONF_KEY_USER_AUTH_DATA)
 
-        # Add domain from auth_data
-        if "auth_data" in new_data and "domain" in new_data["auth_data"]:
-            new_data["domain"] = new_data["auth_data"]["domain"]
+        # Add domain from auth_data, or use default if missing (for very old entries)
+        if "auth_data" in new_data:
+            if "domain" in new_data["auth_data"]:
+                new_data["domain"] = new_data["auth_data"]["domain"]
+            else:
+                # Very old entries don't have domain - add default
+                new_data["auth_data"]["domain"] = LIERDA_LUX_URL
+                new_data["domain"] = LIERDA_LUX_URL
 
         # Update config entry
         hass.config_entries.async_update_entry(config_entry, data=new_data, version=ENTRY_VERSION)
@@ -63,9 +69,14 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         if CONF_KEY_USER_AUTH_DATA in new_data:
             new_data["auth_data"] = new_data.pop(CONF_KEY_USER_AUTH_DATA)
 
-        # Add domain from auth_data
-        if "auth_data" in new_data and "domain" in new_data["auth_data"]:
-            new_data["domain"] = new_data["auth_data"]["domain"]
+        # Add domain from auth_data, or use default if missing (for very old entries)
+        if "auth_data" in new_data:
+            if "domain" in new_data["auth_data"]:
+                new_data["domain"] = new_data["auth_data"]["domain"]
+            else:
+                # Very old entries don't have domain - add default
+                new_data["auth_data"]["domain"] = LIERDA_LUX_URL
+                new_data["domain"] = LIERDA_LUX_URL
 
         # Update config entry
         hass.config_entries.async_update_entry(config_entry, data=new_data, version=ENTRY_VERSION)
@@ -112,6 +123,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         "coordinator": coordinator,
         "client": client,
     }
+
+    # Fetch initial data
+    await coordinator.async_config_entry_first_refresh()
 
     # Forward platform setups
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)

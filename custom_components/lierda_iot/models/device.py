@@ -13,10 +13,12 @@ class Device:
     name: str
     type: int
     mac_id: str
+    ddc_mac: str
+    ddc_id: int
+    ddc_name: str
     attributes: dict[str, Any]
     available: bool
     firmware_version: str | None
-    ddc_id: int
 
     @classmethod
     def from_api_response(cls, data: dict) -> "Device":
@@ -35,9 +37,11 @@ class Device:
             # Extract required fields
             device_id = data["id"]
             device_type = data["type"]
-            mac_id = data["macId"]
+            mac_id = data["macid"]  # API returns lowercase 'macid'
             attributes_str = data["attributes"]
             ddc_id = data["ddcId"]
+            ddc_mac = data["ddcmac"]  # API returns lowercase 'ddcmac'
+            ddc_name = data["ddcname"]  # API returns lowercase 'ddcname'
 
             # Use alias if available and not empty, otherwise use name
             alias = data.get("alias")
@@ -64,10 +68,12 @@ class Device:
             name=name,
             type=device_type,
             mac_id=mac_id,
+            ddc_mac=ddc_mac,
+            ddc_id=ddc_id,
+            ddc_name=ddc_name,
             attributes=attributes,
             available=available,
             firmware_version=firmware_version,
-            ddc_id=ddc_id,
         )
 
     def get_attribute(self, key: str) -> Any:
@@ -80,3 +86,18 @@ class Device:
             Attribute value, or None if key not found
         """
         return self.attributes.get(key)
+
+    @property
+    def device_type(self) -> int:
+        """Alias for type field for compatibility."""
+        return self.type
+
+    @property
+    def online(self) -> bool:
+        """Alias for available field for compatibility."""
+        return self.available
+
+    @property
+    def room_name(self) -> str | None:
+        """Get room name from DDC name."""
+        return self.ddc_name

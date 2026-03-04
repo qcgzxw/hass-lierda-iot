@@ -35,7 +35,6 @@ async def async_setup_entry(
     for device_id, device in coordinator.data.items():
         # Get device type configuration
         if device.type not in LIERDA_DEVICES:
-            _LOGGER.debug("Unknown device type %s for device %s", device.type, device_id)
             continue
 
         device_config = LIERDA_DEVICES[device.type]
@@ -84,7 +83,7 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
 
         # Set supported color modes
         supported_color_modes = set()
-        if device.get_attribute("brightness") is not None:
+        if device.get_attribute("LEV") is not None:
             supported_color_modes.add(ColorMode.BRIGHTNESS)
         if not supported_color_modes:
             supported_color_modes.add(ColorMode.ONOFF)
@@ -97,7 +96,7 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
         if self.coordinator.data:
             device = self.coordinator.data.get(self.device.id)
             if device:
-                power = device.get_attribute("power")
+                power = device.get_attribute("SWI")
                 # Power can be "ON"/"OFF" string or boolean
                 if isinstance(power, str):
                     return power == "ON"
@@ -110,7 +109,7 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
         if self.coordinator.data:
             device = self.coordinator.data.get(self.device.id)
             if device:
-                brightness = device.get_attribute("brightness")
+                brightness = device.get_attribute("LEV")
                 if brightness is not None:
                     return int(brightness)
         return None
@@ -121,9 +120,10 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
         return {
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
-            "manufacturer": "Lierda",
+            "manufacturer": "Lierda iot",
             "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
+            "serial_number": str(self.device.id),
         }
 
     @property
@@ -142,8 +142,8 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
-                "power",
+                self.device.ddc_mac,
+                "SWI",
                 "ON",
             )
 
@@ -153,8 +153,8 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
                 await self.client.set_device_attribute(
                     self.device.id,
                     self.device.mac_id,
-                    str(self.device.ddc_id),
-                    "brightness",
+                    self.device.ddc_mac,
+                    "LEV",
                     str(brightness),
                 )
 
@@ -169,8 +169,8 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
             await self.client.set_device_attribute(
                 self.device.id,
                 self.device.mac_id,
-                str(self.device.ddc_id),
-                "power",
+                self.device.ddc_mac,
+                "SWI",
                 "OFF",
             )
 
