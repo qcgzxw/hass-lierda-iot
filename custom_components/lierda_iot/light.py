@@ -158,8 +158,11 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
                     str(brightness),
                 )
 
-            # Request coordinator refresh
-            await self.coordinator.async_request_refresh()
+            # Optimistically update state
+            self.device.attributes["SWI"] = "ON"
+            if "brightness" in kwargs:
+                self.device.attributes["LEV"] = str(kwargs["brightness"])
+            self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to turn on light %s: %s", self.device.id, err)
 
@@ -174,7 +177,10 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
                 "OFF",
             )
 
-            # Request coordinator refresh
-            await self.coordinator.async_request_refresh()
+            # Optimistically update state
+            self.device.attributes["SWI"] = "ON"
+            if "brightness" in kwargs:
+                self.device.attributes["LEV"] = str(kwargs["brightness"])
+            self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to turn off light %s: %s", self.device.id, err)

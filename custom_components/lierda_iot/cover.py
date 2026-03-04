@@ -151,7 +151,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "WIN",
                 "OPEN",
             )
-            await self.coordinator.async_request_refresh()
+            self.device.attributes["WIN"] = "OPEN"
+            self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to open cover %s: %s", self.device.id, err)
 
@@ -165,7 +166,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "WIN",
                 "CLOSE",
             )
-            await self.coordinator.async_request_refresh()
+            self.device.attributes["WIN"] = "CLOSE"
+            self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to close cover %s: %s", self.device.id, err)
 
@@ -179,7 +181,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "WIN",
                 "STOP",
             )
-            await self.coordinator.async_request_refresh()
+            self.device.attributes["WIN"] = "STOP"
+            self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to stop cover %s: %s", self.device.id, err)
 
@@ -197,6 +200,7 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "LEV",
                 str(position),
             )
-            await self.coordinator.async_request_refresh()
+            self.device.attributes["LEV"] = position
+            self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to set cover position %s: %s", self.device.id, err)

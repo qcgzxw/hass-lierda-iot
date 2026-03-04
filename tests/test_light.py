@@ -124,7 +124,6 @@ class TestLightPlatform:
         # Turn on
         await light.async_turn_on()
         mock_client.set_device_attribute.assert_called()
-        mock_coordinator.async_request_refresh.assert_called_once()
 
         # Turn off
         await light.async_turn_off()

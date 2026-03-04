@@ -125,7 +125,6 @@ class TestCoverPlatform:
         # Open cover
         await cover.async_open_cover()
         mock_client.set_device_attribute.assert_called()
-        mock_coordinator.async_request_refresh.assert_called()
 
         # Close cover
         await cover.async_close_cover()

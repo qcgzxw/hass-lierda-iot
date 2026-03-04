@@ -144,7 +144,20 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
                 attribute_name,
                 "ON",
             )
-            await self.coordinator.async_request_refresh()
+            
+            # Optimistically update state
+            swi_value = self.device.get_attribute("SWI")
+            if swi_value is not None:
+                try:
+                    index = int(self.entity_key.removeprefix("ky"))
+                    swi_int = int(swi_value, 16)
+                    light_mask = 1 << (index - 1)
+                    swi_int |= light_mask
+                    self.device.attributes["SWI"] = f"{swi_int:#04x}"
+                except (ValueError, TypeError, AttributeError):
+                    pass
+            self.async_write_ha_state()
+            
         except Exception as err:
             _LOGGER.error("Failed to turn on switch %s: %s", self.device.id, err)
 
@@ -160,6 +173,19 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
                 attribute_name,
                 "OFF",
             )
-            await self.coordinator.async_request_refresh()
+            
+            # Optimistically update state
+            swi_value = self.device.get_attribute("SWI")
+            if swi_value is not None:
+                try:
+                    index = int(self.entity_key.removeprefix("ky"))
+                    swi_int = int(swi_value, 16)
+                    light_mask = 1 << (index - 1)
+                    swi_int &= ~light_mask
+                    self.device.attributes["SWI"] = f"{swi_int:#04x}"
+                except (ValueError, TypeError, AttributeError):
+                    pass
+            self.async_write_ha_state()
+
         except Exception as err:
             _LOGGER.error("Failed to turn off switch %s: %s", self.device.id, err)

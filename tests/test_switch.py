@@ -126,7 +126,6 @@ class TestSwitchPlatform:
         mock_client.set_device_attribute.assert_called_with(
             12345, "AA:BB:CC:DD:EE:FF", "00:00:00:00:00:00", "KY1", "ON"
         )
-        mock_coordinator.async_request_refresh.assert_called_once()
 
         # Turn off
         await switch.async_turn_off()
