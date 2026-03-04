@@ -29,8 +29,10 @@ class TestAsyncSetupEntry:
         config_entry.data = {}  # Missing auth_data
         config_entry.version = 3
 
-        # Run setup
-        result = await async_setup_entry(hass, config_entry)
+        with patch('custom_components.lierda_iot.api.client.LierdaClient.get_all_devices', new_callable=AsyncMock) as mock_get_devices:
+            mock_get_devices.return_value = []
+            # Run setup
+            result = await async_setup_entry(hass, config_entry)
 
         # Verify setup failed
         assert result is False
@@ -68,8 +70,10 @@ class TestAsyncSetupEntry:
         }
         config_entry.version = 3
 
-        # Run setup
-        result = await async_setup_entry(hass, config_entry)
+        with patch('custom_components.lierda_iot.api.client.LierdaClient.get_all_devices', new_callable=AsyncMock) as mock_get_devices:
+            mock_get_devices.return_value = []
+            # Run setup
+            result = await async_setup_entry(hass, config_entry)
 
         # Verify setup succeeded
         assert result is True
@@ -116,8 +120,10 @@ class TestAsyncSetupEntry:
         }
         config_entry.version = 3
 
-        # Run setup
-        result = await async_setup_entry(hass, config_entry)
+        with patch('custom_components.lierda_iot.api.client.LierdaClient.get_all_devices', new_callable=AsyncMock) as mock_get_devices:
+            mock_get_devices.return_value = []
+            # Run setup
+            result = await async_setup_entry(hass, config_entry)
 
         # Verify setup succeeded
         assert result is True
@@ -164,8 +170,10 @@ class TestAsyncUnloadEntry:
         }
         config_entry.version = 3
 
-        # Setup first
-        await async_setup_entry(hass, config_entry)
+        with patch('custom_components.lierda_iot.api.client.LierdaClient.get_all_devices', new_callable=AsyncMock) as mock_get_devices:
+            mock_get_devices.return_value = []
+            # Setup first
+            await async_setup_entry(hass, config_entry)
 
         # Verify setup succeeded
         assert "test_entry" in hass.data["lierda_iot"]

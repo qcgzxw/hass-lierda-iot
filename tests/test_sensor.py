@@ -32,10 +32,12 @@ class TestSensorPlatform:
             name="Test Door Sensor",
             type=device_type,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"LIVE": "ON", "battery_voltage": 3.2, "battery_percentage": 85},
+            attributes={"LIVE": "ON", "BAT": 3.2, "battery_percentage": 85},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator
@@ -89,10 +91,12 @@ class TestSensorPlatform:
             name="Test Sensor",
             type=10,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"battery_voltage": 3.2, "LIVE": "ON"},
+            attributes={"BAT": 3.2, "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator
@@ -122,7 +126,7 @@ class TestSensorPlatform:
         assert sensor.available is True
 
         # Update device data
-        mock_device.attributes["battery_voltage"] = 3.5
+        mock_device.attributes["BAT"] = 3.5
         mock_coordinator.data = {12345: mock_device}
 
         # Check updated value

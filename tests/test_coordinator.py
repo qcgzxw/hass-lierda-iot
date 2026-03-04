@@ -30,22 +30,26 @@ class TestLierdaDataUpdateCoordinator:
         device1 = Device(
             id=1,
             name="Living Room Light",
-            type=1,
+            type=53,
             mac_id="AA:BB:CC:DD:EE:FF",
             attributes={"LIVE": "ON", "POWER": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
         device2 = Device(
             id=2,
             name="Bedroom Light",
-            type=1,
+            type=53,
             mac_id="11:22:33:44:55:66",
             attributes={"LIVE": "ON", "POWER": "OFF"},
             available=True,
             firmware_version="1.0.1",
             ddc_id=101,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Mock get_all_devices to return list of devices
@@ -176,32 +180,38 @@ class TestLierdaDataUpdateCoordinator:
             Device(
                 id=100,
                 name="Device 100",
-                type=1,
+                type=53,
                 mac_id="MAC1",
                 attributes={},
                 available=True,
                 firmware_version=None,
                 ddc_id=1,
+            ddc_mac="00:00:00:00:00:00",
+            ddc_name="Test DDC",
             ),
             Device(
                 id=200,
                 name="Device 200",
-                type=2,
+                type=53,
                 mac_id="MAC2",
                 attributes={},
                 available=True,
                 firmware_version=None,
                 ddc_id=2,
+            ddc_mac="00:00:00:00:00:00",
+            ddc_name="Test DDC",
             ),
             Device(
                 id=300,
                 name="Device 300",
-                type=3,
+                type=53,
                 mac_id="MAC3",
                 attributes={},
                 available=True,
                 firmware_version=None,
                 ddc_id=3,
+            ddc_mac="00:00:00:00:00:00",
+            ddc_name="Test DDC",
             ),
         ]
 
@@ -280,12 +290,14 @@ class TestLierdaDataUpdateCoordinator:
         device = Device(
             id=42,
             name="Single Device",
-            type=1,
+            type=53,
             mac_id="SINGLE:MAC",
             attributes={"LIVE": "ON"},
             available=True,
             firmware_version="2.0.0",
             ddc_id=10,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Mock get_all_devices

@@ -32,10 +32,12 @@ class TestBinarySensorPlatform:
             name="Test Door Sensor",
             type=device_type,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"LIVE": "ON", "door": True, "battery_voltage": 3.2, "battery_percentage": 85},
+            attributes={"LIVE": "ON", "DOR": "OPEN", "BAT": 3.2, "_BAT": "85%"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator
@@ -89,10 +91,12 @@ class TestBinarySensorPlatform:
             name="Test Door Sensor",
             type=10,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"door": True, "LIVE": "ON"},
+            attributes={"DOR": "OPEN", "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator
@@ -120,7 +124,7 @@ class TestBinarySensorPlatform:
         assert binary_sensor.available is True
 
         # Update device data
-        mock_device.attributes["door"] = False
+        mock_device.attributes["DOR"] = "CLOSE"
         mock_coordinator.data = {12345: mock_device}
 
         # Check updated value

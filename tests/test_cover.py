@@ -32,10 +32,12 @@ class TestCoverPlatform:
             name="Test Curtain",
             type=5,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"window": "STOP", "level": 50, "LIVE": "ON"},
+            attributes={"WIN": "STOP", "LEV": 50, "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator
@@ -92,10 +94,12 @@ class TestCoverPlatform:
             name="Test Curtain",
             type=5,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"window": "STOP", "level": 50, "LIVE": "ON"},
+            attributes={"WIN": "STOP", "LEV": 50, "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator and client
@@ -141,10 +145,12 @@ class TestCoverPlatform:
             name="Test Curtain",
             type=5,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"window": "OPEN", "level": 100, "LIVE": "ON"},
+            attributes={"WIN": "OPEN", "LEV": 100, "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         mock_coordinator = AsyncMock()
@@ -164,11 +170,11 @@ class TestCoverPlatform:
         assert cover.is_closed is False
 
         # Test when window is CLOSE
-        mock_device.attributes = {"window": "CLOSE", "level": 0, "LIVE": "ON"}
+        mock_device.attributes = {"WIN": "CLOSE", "LEV": 0, "LIVE": "ON"}
         assert cover.is_closed is True
 
         # Test when window is STOP
-        mock_device.attributes = {"window": "STOP", "level": 50, "LIVE": "ON"}
+        mock_device.attributes = {"WIN": "STOP", "LEV": 50, "LIVE": "ON"}
         assert cover.is_closed is None
 
     async def test_cover_position_property(self):
@@ -180,10 +186,12 @@ class TestCoverPlatform:
             name="Test Curtain",
             type=5,
             mac_id="AA:BB:CC:DD:EE:FF",
-            attributes={"window": "STOP", "level": 75, "LIVE": "ON"},
+            attributes={"WIN": "STOP", "LEV": 75, "LIVE": "ON"},
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         mock_coordinator = AsyncMock()
@@ -203,5 +211,5 @@ class TestCoverPlatform:
         assert cover.current_cover_position == 75
 
         # Test with None level
-        mock_device.attributes = {"window": "STOP", "LIVE": "ON"}
+        mock_device.attributes = {"WIN": "STOP", "LIVE": "ON"}
         assert cover.current_cover_position is None

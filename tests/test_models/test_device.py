@@ -9,16 +9,18 @@ def test_device_creation():
     device = Device(
         id=12345,
         name="Living Room Light",
-        type=1,
+        type=53,
         mac_id="AA:BB:CC:DD:EE:FF",
         attributes={"power": "ON", "brightness": 80},
         available=True,
         firmware_version="1.0.5",
         ddc_id=100,
+    ddc_mac="00:00:00:00:00:00",
+    ddc_name="Test DDC",
     )
     assert device.id == 12345
     assert device.name == "Living Room Light"
-    assert device.type == 1
+    assert device.type == 53
     assert device.mac_id == "AA:BB:CC:DD:EE:FF"
     assert device.attributes == {"power": "ON", "brightness": 80}
     assert device.available is True
@@ -31,12 +33,14 @@ def test_device_creation_without_firmware_version():
     device = Device(
         id=12345,
         name="Living Room Light",
-        type=1,
+        type=53,
         mac_id="AA:BB:CC:DD:EE:FF",
         attributes={"power": "ON"},
         available=True,
         firmware_version=None,
         ddc_id=100,
+    ddc_mac="00:00:00:00:00:00",
+    ddc_name="Test DDC",
     )
     assert device.firmware_version is None
 
@@ -47,15 +51,17 @@ def test_device_from_api_response_with_alias():
         "id": 12345,
         "alias": "Living Room Light",
         "name": "Default Name",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "ON", "FWV": "1.0.5"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.id == 12345
     assert device.name == "Living Room Light"  # Uses alias
-    assert device.type == 1
+    assert device.type == 53
     assert device.mac_id == "AA:BB:CC:DD:EE:FF"
     assert device.attributes == {"power": "ON", "LIVE": "ON", "FWV": "1.0.5"}
     assert device.available is True  # LIVE is ON
@@ -68,10 +74,12 @@ def test_device_from_api_response_without_alias():
     api_response = {
         "id": 12345,
         "name": "Default Name",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.name == "Default Name"  # Uses name
@@ -82,10 +90,12 @@ def test_device_from_api_response_available_when_live_on():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.available is True
@@ -96,10 +106,12 @@ def test_device_from_api_response_not_available_when_live_off():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "OFF"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.available is False
@@ -110,10 +122,12 @@ def test_device_from_api_response_not_available_when_live_missing():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.available is False
@@ -124,10 +138,12 @@ def test_device_from_api_response_without_firmware_version():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.firmware_version is None
@@ -138,10 +154,12 @@ def test_device_from_api_response_with_empty_attributes():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": "{}",
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.attributes == {}
@@ -154,12 +172,14 @@ def test_device_get_attribute():
     device = Device(
         id=12345,
         name="Test Device",
-        type=1,
+        type=53,
         mac_id="AA:BB:CC:DD:EE:FF",
         attributes={"power": "ON", "brightness": 80},
         available=True,
         firmware_version="1.0.5",
         ddc_id=100,
+    ddc_mac="00:00:00:00:00:00",
+    ddc_name="Test DDC",
     )
     assert device.get_attribute("power") == "ON"
     assert device.get_attribute("brightness") == 80
@@ -170,12 +190,14 @@ def test_device_get_attribute_missing_key():
     device = Device(
         id=12345,
         name="Test Device",
-        type=1,
+        type=53,
         mac_id="AA:BB:CC:DD:EE:FF",
         attributes={"power": "ON"},
         available=True,
         firmware_version="1.0.5",
         ddc_id=100,
+    ddc_mac="00:00:00:00:00:00",
+    ddc_name="Test DDC",
     )
     assert device.get_attribute("missing_key") is None
 
@@ -185,12 +207,14 @@ def test_device_get_attribute_empty_attributes():
     device = Device(
         id=12345,
         name="Test Device",
-        type=1,
+        type=53,
         mac_id="AA:BB:CC:DD:EE:FF",
         attributes={},
         available=True,
         firmware_version="1.0.5",
         ddc_id=100,
+    ddc_mac="00:00:00:00:00:00",
+    ddc_name="Test DDC",
     )
     assert device.get_attribute("any_key") is None
 
@@ -200,10 +224,12 @@ def test_device_from_api_response_with_extra_fields():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
         "extra_field": "should be ignored",
     }
     device = Device.from_api_response(api_response)
@@ -215,10 +241,12 @@ def test_device_from_api_response_missing_required_field_id():
     """Test Device raises ValueError when id is missing."""
     api_response = {
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     with pytest.raises(ValueError, match="Missing required field: id"):
         Device.from_api_response(api_response)
@@ -229,9 +257,11 @@ def test_device_from_api_response_missing_required_field_type():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     with pytest.raises(ValueError, match="Missing required field: type"):
         Device.from_api_response(api_response)
@@ -242,11 +272,13 @@ def test_device_from_api_response_missing_required_field_macid():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
+        "type": 53,
         "attributes": '{"power": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
-    with pytest.raises(ValueError, match="Missing required field: macId"):
+    with pytest.raises(ValueError, match="Missing required field: macid"):
         Device.from_api_response(api_response)
 
 
@@ -255,9 +287,11 @@ def test_device_from_api_response_missing_required_field_attributes():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     with pytest.raises(ValueError, match="Missing required field: attributes"):
         Device.from_api_response(api_response)
@@ -268,8 +302,8 @@ def test_device_from_api_response_missing_required_field_ddcid():
     api_response = {
         "id": 12345,
         "name": "Test Device",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON"}',
     }
     with pytest.raises(ValueError, match="Missing required field: ddcId"):
@@ -280,10 +314,12 @@ def test_device_from_api_response_missing_name_and_alias():
     """Test Device raises ValueError when both name and alias are missing."""
     api_response = {
         "id": 12345,
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     with pytest.raises(ValueError, match="Missing required field"):
         Device.from_api_response(api_response)
@@ -302,10 +338,12 @@ def test_device_from_api_response_with_null_alias():
         "id": 12345,
         "alias": None,
         "name": "Default Name",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.name == "Default Name"
@@ -317,10 +355,12 @@ def test_device_from_api_response_with_empty_alias():
         "id": 12345,
         "alias": "",
         "name": "Default Name",
-        "type": 1,
-        "macId": "AA:BB:CC:DD:EE:FF",
+        "type": 53,
+        "macid": "AA:BB:CC:DD:EE:FF",
         "attributes": '{"power": "ON", "LIVE": "ON"}',
         "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
     }
     device = Device.from_api_response(api_response)
     assert device.name == "Default Name"

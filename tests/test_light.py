@@ -36,6 +36,8 @@ class TestLightPlatform:
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator
@@ -96,6 +98,8 @@ class TestLightPlatform:
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator and client

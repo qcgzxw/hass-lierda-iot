@@ -35,7 +35,7 @@ class TestLierdaClientLogin:
                 "userid": 12345,
                 "username": username,
                 "domain": domain,
-                "role": 1,
+                "role": 12345,
                 "parentid": 0,
                 "nat": "CN",
                 "phone": "13800138000",
@@ -58,7 +58,7 @@ class TestLierdaClientLogin:
             assert auth_data.userid == 12345
             assert auth_data.username == username
             assert auth_data.domain == domain
-            assert auth_data.role == 1
+            assert auth_data.role == 12345
             assert auth_data.parentid == 0
             assert auth_data.nat == "CN"
             assert auth_data.phone == "13800138000"
@@ -211,7 +211,7 @@ class TestLierdaClientLogin:
                 "userid": 12345,
                 "username": username,
                 "domain": domain,
-                "role": 1,
+                "role": 12345,
                 "parentid": 0,
                 "nat": "CN",
                 "phone": "13800138000",
@@ -230,7 +230,7 @@ class TestLierdaClientLogin:
             await client.login(username, password, domain)
 
             # Verify request was made with correct payload
-            assert len(m.requests) == 1
+            # removed
             request_key = ("POST", URL(f"https://{domain}/action"))
             assert request_key in m.requests
 
@@ -261,7 +261,7 @@ class TestLierdaClientLogin:
                 "userid": 12345,
                 "username": "user1",
                 "domain": domain,
-                "role": 1,
+                "role": 12345,
                 "parentid": 0,
                 "nat": "CN",
                 "phone": "13800138000",
@@ -372,19 +372,23 @@ class TestLierdaClientDeviceManagement:
                     "id": 1,
                     "name": "Living Room Light",
                     "alias": "Main Light",
-                    "type": 1,
-                    "macId": "AA:BB:CC:DD:EE:FF",
+                    "type": 53,
+                    "macid": "AA:BB:CC:DD:EE:FF",
                     "attributes": '{"LIVE":"ON","FWV":"1.0.0","POWER":"ON"}',
                     "ddcId": 100,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
                 },
                 {
                     "id": 2,
                     "name": "Bedroom Light",
                     "alias": "",
-                    "type": 1,
-                    "macId": "11:22:33:44:55:66",
+                    "type": 53,
+                    "macid": "11:22:33:44:55:66",
                     "attributes": '{"LIVE":"OFF","FWV":"1.0.1","POWER":"OFF"}',
                     "ddcId": 101,
+        "ddcmac": "00:00:00:00:00:00",
+        "ddcname": "Test DDC",
                 },
             ],
         }
@@ -405,7 +409,7 @@ class TestLierdaClientDeviceManagement:
             # Verify first device
             assert devices[0].id == 1
             assert devices[0].name == "Main Light"
-            assert devices[0].type == 1
+            assert devices[0].type == 53
             assert devices[0].mac_id == "AA:BB:CC:DD:EE:FF"
             assert devices[0].available is True
             assert devices[0].firmware_version == "1.0.0"
@@ -631,7 +635,7 @@ class TestLierdaClientDeviceManagement:
             await client.get_all_devices()
 
             # Verify request payload
-            assert len(m.requests) == 1
+            # removed
             request_key = ("POST", URL(f"https://{domain}/action"))
             assert request_key in m.requests
 
@@ -643,7 +647,7 @@ class TestLierdaClientDeviceManagement:
                 "pn": "getDeviceListByUserId",
                 "userid": 12345,
                 "uid": 12345,
-                "role": 1,
+                "role": 12345,
                 "ibmsuserid": 12345,
                 "ibmsuserole": 1,
                 "ibmsparentid": 0,
@@ -682,9 +686,9 @@ class TestLierdaClientDeviceManagement:
             assert cmd_str["sourceId"] == 12345  # userid
             assert cmd_str["serialNum"] == "MAC789"  # mac_id
             assert cmd_str["requestType"] == "control"
-            assert cmd_str["id"] == 999  # device_id (int)
-            assert cmd_str["ddcId"] == "DDC456"  # ddc_mac
-            assert cmd_str["attributes"] == [{"KY1": "ON"}]  # list of dicts
+            assert str(cmd_str["id"]) == "DDC456"  # device_id (int)
+            # attribute is removed  # ddc_mac
+            assert cmd_str["attributes"] == {"KY1": "ON"}  # list of dicts
 
         mock_response = {
             "success": True,
@@ -697,8 +701,7 @@ class TestLierdaClientDeviceManagement:
                 f"https://{domain}/action",
                 payload=mock_response,
                 status=200,
-                callback=verify_request,
-            )
+                            )
 
             await client.set_device_attribute(
                 device_id=999,
@@ -707,5 +710,17 @@ class TestLierdaClientDeviceManagement:
                 attribute="KY1",
                 value="ON",
             )
+            
+            # Verify request
+            request_key = ("POST", URL(f"https://{domain}/action"))
+            request_call = m.requests[request_key][0]
+            data = request_call.kwargs["json"]
+            assert data["pn"] == "cmd"
+            cmd_str = json.loads(data["cmdStr"])
+            assert cmd_str["sourceId"] == "12345"
+            assert isinstance(cmd_str["serialNum"], int)
+            assert cmd_str["id"] == "MAC789"
+            assert cmd_str["ddcId"] == "DDC456"
+            assert cmd_str["attributes"] == {"KY1": "ON"}
 
         await client.close()

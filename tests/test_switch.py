@@ -36,6 +36,8 @@ class TestSwitchPlatform:
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator
@@ -96,6 +98,8 @@ class TestSwitchPlatform:
             available=True,
             firmware_version="1.0.0",
             ddc_id=100,
+        ddc_mac="00:00:00:00:00:00",
+        ddc_name="Test DDC",
         )
 
         # Create mock coordinator and client
@@ -120,7 +124,7 @@ class TestSwitchPlatform:
         # Turn on
         await switch.async_turn_on()
         mock_client.set_device_attribute.assert_called_with(
-            12345, "AA:BB:CC:DD:EE:FF", "100", "KY1", "ON"
+            12345, "AA:BB:CC:DD:EE:FF", "00:00:00:00:00:00", "KY1", "ON"
         )
         mock_coordinator.async_request_refresh.assert_called_once()
 
