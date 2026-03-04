@@ -257,18 +257,21 @@ class LierdaConfigFlowHandler(OptionsFlow):
             from datetime import timedelta
             refresh_interval = user_input.get(CONF_REFRESH_INTERVAL, old_refresh_interval)
 
-            # Update coordinator's update interval if it exists
-            entry_id = self.config_entry.entry_id
-            if DOMAIN in self.hass.data and entry_id in self.hass.data[DOMAIN]:
-                coordinator = self.hass.data[DOMAIN][entry_id].get("coordinator")
-                if coordinator:
-                    coordinator.update_interval = timedelta(seconds=refresh_interval)
-
-            # Update config entry with new refresh interval
+            # Reload the integration to apply the new interval immediately
+            # We don't need to manually update the config entry data because the options 
+            # flow will return an entry which HA will save. But for the polling interval 
+            # to be read by the setup, we can either store it in options or update data.
+            # Here we just update the data as before.
             new_data = {**self.config_entry.data, CONF_KEY_REFRESH_INTERVAL: refresh_interval}
             self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
+            
+            # The async_create_entry triggers an EVENT_OPTIONS_FLOW_FIRED but not a reload automatically.
+            # However `async_reload` can restart the entry. We'll queue a reload.
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(self.config_entry.entry_id)
+            )
 
-            return self.async_create_entry(title="", data=user_input)
+            return self.async_create_entry(title="", data={})
 
         return self.async_show_form(
             step_id="init",
