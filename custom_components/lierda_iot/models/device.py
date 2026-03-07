@@ -18,8 +18,8 @@ class Device:
     ddc_name: str
     attributes: dict[str, Any]
     available: bool
-    firmware_version: str | None
-    link: str | None
+    firmware_version: str | None = None
+    link: str | None = None
 
     @classmethod
     def from_api_response(cls, data: dict) -> "Device":

@@ -4,7 +4,7 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 
 from custom_components.lierda_iot.models.auth import AuthData
 
@@ -69,6 +69,7 @@ class TestAsyncSetupEntry:
             "refresh_interval": 300,
         }
         config_entry.version = 3
+        config_entry.state = ConfigEntryState.SETUP_IN_PROGRESS
 
         with patch('custom_components.lierda_iot.api.client.LierdaClient.get_all_devices', new_callable=AsyncMock) as mock_get_devices:
             mock_get_devices.return_value = []
@@ -119,6 +120,7 @@ class TestAsyncSetupEntry:
             # No refresh_interval specified
         }
         config_entry.version = 3
+        config_entry.state = ConfigEntryState.SETUP_IN_PROGRESS
 
         with patch('custom_components.lierda_iot.api.client.LierdaClient.get_all_devices', new_callable=AsyncMock) as mock_get_devices:
             mock_get_devices.return_value = []
@@ -169,6 +171,7 @@ class TestAsyncUnloadEntry:
             "refresh_interval": 300,
         }
         config_entry.version = 3
+        config_entry.state = ConfigEntryState.SETUP_IN_PROGRESS
 
         with patch('custom_components.lierda_iot.api.client.LierdaClient.get_all_devices', new_callable=AsyncMock) as mock_get_devices:
             mock_get_devices.return_value = []
