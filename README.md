@@ -43,7 +43,7 @@
 
 - [x] [lierda-lux 后台](https://www.lierdalux.cn)
 - [x] [lierda智能教室 后台](https://lsd.lierdalux.cn)
-- [ ] [lierda智能酒店 后台](https://hotel.lierdalux.cn)(未测试)
+- [x] [lierda智能酒店 后台](https://hotel.lierdalux.cn)
 
 PS: 以上平台均可注册智能家居网关，功能基本完全一样但是相互隔离；不同平台下注册的同一网关不可无缝切换，需要重新配置。
 
@@ -60,10 +60,7 @@ PS: 以上平台均可注册智能家居网关，功能基本完全一样但是�
 - [ ] 设备属性抽离
 - [ ] reload实现
 - [ ] option_flow实现
-- [ ] HA测试用例
 - [ ] 更多设备适配
-- [ ] lierda-lux经常假死不可用，寻找另外的途径控制设备。
-- [ ] 研究本地网关mqtt
 
 ## 版本更新说明
 
@@ -76,6 +73,7 @@ PS: 以上平台均可注册智能家居网关，功能基本完全一样但是�
   - `Device` 数据类字段增加可选默认值（`firmware_version`、`link`）
   - `LierdaDataUpdateCoordinator` 构造函数中 `config_entry` 改为可选参数
   - 更新测试 mock 以兼容 HA 2025.x `ConfigEntryState` API
+- [x] **智能酒店支持**：支持智能酒店后台。
 
 ### v2.0.0 (重构版)
 
