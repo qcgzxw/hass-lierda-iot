@@ -14,6 +14,29 @@
 
 精力有限，设备有限，欢迎大家一起完善。
 
+## 安装方法
+
+### 方法一：通过 HACS 安装（推荐）
+
+1. 确保你的 Home Assistant 已经安装了 [HACS](https://hacs.xyz/)
+2. 在 HACS 中添加自定义仓库：
+   - 打开 HACS → 集成
+   - 点击右上角三个点 → 自定义仓库
+   - 仓库 URL：`https://github.com/qcgzxw/hass-lierda-iot`
+   - 类别：集成
+   - 点击添加
+3. 在 HACS 中搜索并安装 "Lierda IoT"
+4. 重启 Home Assistant
+5. 在设置 → 设备与服务 → 添加集成中搜索 "Lierda IoT"
+
+### 方法二：手动安装
+
+1. 前往 [Releases](https://github.com/qcgzxw/hass-lierda-iot/releases) 页面
+2. 下载最新版本的 `lierda_iot.zip` 文件
+3. 解压后将 `lierda_iot` 文件夹上传到 Home Assistant 的 `custom_components` 目录
+4. 重启 Home Assistant
+5. 在设置 → 设备与服务 → 添加集成中搜索 "Lierda IoT"
+
 ## 使用说明
 
 ### 支持平台
