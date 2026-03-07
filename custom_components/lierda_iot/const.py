@@ -5,6 +5,7 @@ BAND = "Lierda iot"
 DOMAIN = "lierda_iot"
 VERSION = "1.1.0"
 ENTRIES_VERSION = 2
+ENTRY_VERSION = 3
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -27,8 +28,6 @@ CONF_USERNAME = "username"
 CONF_PASSWORD = "password"
 CONF_LUX_DOMAIN = "lux_domain"
 CONF_REFRESH_INTERVAL = "refresh_interval"
-CONF_FILTER_DEVICE = "filter_device"
-CONF_REMEMBER_ME = "remember_me"
 
 CONF_KEY_VERSION = "version"
 CONF_KEY_USERNAME = "username"
@@ -37,8 +36,20 @@ CONF_KEY_USER_AUTH_DATA = "user_auth_data"
 CONF_KEY_DEVICES = "devices"
 CONF_KEY_REFRESH_INTERVAL = "refresh_interval"
 
-CONF_RELOAD_FLAG = "flag_reload"
-
-LIERDA_DEVICES = "lierda_devices"
-
 DEFAULT_REFRESH_INTERVAL = 300
+
+# Device type constants
+TYPE_LT_CTM = 1   # Light
+TYPE_SW_TK2 = 2   # 2-gang switch
+TYPE_SW_TK3 = 3   # 3-gang switch
+TYPE_SW_TK4 = 4   # 4-gang switch
+TYPE_WD_DYK = 6   # Curtain
+
+TYPE_SS_DOR = 10  # Door sensor
+TYPE_CL_R1M = 26  # Light
+TYPE_SW_KY1 = 53  # 1-gang switch
+TYPE_SW_KY2 = 54  # 2-gang switch
+TYPE_SW_KY3 = 55  # 3-gang switch
+TYPE_SW_KY4 = 56  # 4-gang switch
+TYPE_SW_KY6 = 58  # 6-gang switch
+TYPE_WD_RXJ = 5   # Curtain
