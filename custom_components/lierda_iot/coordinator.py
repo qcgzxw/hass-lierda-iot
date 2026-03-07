@@ -38,8 +38,8 @@ class LierdaDataUpdateCoordinator(DataUpdateCoordinator[dict[int, Device]]):
         self,
         hass: HomeAssistant,
         client: LierdaClient,
-        config_entry: ConfigEntry,
         update_interval: timedelta,
+        config_entry: ConfigEntry | None = None,
     ) -> None:
         """Initialize the coordinator.
 

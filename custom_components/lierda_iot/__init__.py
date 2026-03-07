@@ -115,8 +115,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     coordinator = LierdaDataUpdateCoordinator(
         hass=hass,
         client=client,
-        config_entry=config_entry,
         update_interval=timedelta(seconds=refresh_interval),
+        config_entry=config_entry,
     )
 
     # Store coordinator and client

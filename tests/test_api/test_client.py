@@ -632,6 +632,8 @@ class TestLierdaClientDeviceManagement:
                 status=200,
             )
 
+            # Pre-create session so aioresponses can intercept it
+            client._get_session()
             await client.get_all_devices()
 
             # Verify request payload
@@ -647,7 +649,7 @@ class TestLierdaClientDeviceManagement:
                 "pn": "getDeviceListByUserId",
                 "userid": 12345,
                 "uid": 12345,
-                "role": 12345,
+                "role": 1,
                 "ibmsuserid": 12345,
                 "ibmsuserole": 1,
                 "ibmsparentid": 0,

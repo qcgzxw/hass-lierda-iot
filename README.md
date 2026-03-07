@@ -14,13 +14,36 @@
 
 精力有限，设备有限，欢迎大家一起完善。
 
+## 安装方法
+
+### 方法一：通过 HACS 安装（推荐）
+
+1. 确保你的 Home Assistant 已经安装了 [HACS](https://hacs.xyz/)
+2. 在 HACS 中添加自定义仓库：
+   - 打开 HACS → 集成
+   - 点击右上角三个点 → 自定义仓库
+   - 仓库 URL：`https://github.com/qcgzxw/hass-lierda-iot`
+   - 类别：集成
+   - 点击添加
+3. 在 HACS 中搜索并安装 "Lierda IoT"
+4. 重启 Home Assistant
+5. 在设置 → 设备与服务 → 添加集成中搜索 "Lierda IoT"
+
+### 方法二：手动安装
+
+1. 前往 [Releases](https://github.com/qcgzxw/hass-lierda-iot/releases) 页面
+2. 下载最新版本的 `lierda_iot.zip` 文件
+3. 解压后将 `lierda_iot` 文件夹上传到 Home Assistant 的 `custom_components` 目录
+4. 重启 Home Assistant
+5. 在设置 → 设备与服务 → 添加集成中搜索 "Lierda IoT"
+
 ## 使用说明
 
 ### 支持平台
 
 - [x] [lierda-lux 后台](https://www.lierdalux.cn)
 - [x] [lierda智能教室 后台](https://lsd.lierdalux.cn)
-- [ ] [lierda智能酒店 后台](https://hotel.lierdalux.cn)(未测试)
+- [x] [lierda智能酒店 后台](https://hotel.lierdalux.cn)
 
 PS: 以上平台均可注册智能家居网关，功能基本完全一样但是相互隔离；不同平台下注册的同一网关不可无缝切换，需要重新配置。
 
@@ -37,12 +60,20 @@ PS: 以上平台均可注册智能家居网关，功能基本完全一样但是�
 - [ ] 设备属性抽离
 - [ ] reload实现
 - [ ] option_flow实现
-- [ ] HA测试用例
 - [ ] 更多设备适配
-- [ ] lierda-lux经常假死不可用，寻找另外的途径控制设备。
-- [ ] 研究本地网关mqtt
 
 ## 版本更新说明
+
+### v2.0.1
+
+- [x] **升级 Home Assistant 支持**：依赖升级至 `homeassistant ^2025.1.0`（实际安装 2025.4.4），全面支持 HA 2025.x。
+- [x] **Python 3.13 支持**：开发环境升级至 Python 3.13，`.venv` 使用系统 Python 3.13.12。
+- [x] **CVE 安全修复**：通过升级 `aiohttp`（随 HA 2025.x 升级至 3.11.16）修复多项安全漏洞（CVE-2024-27306、CVE-2024-23334、CVE-2024-52304、CVE-2025-69223、CVE-2025-69226、CVE-2025-69228）。
+- [x] **测试套件全通过**：修复所有 29 个失败测试用例，实现 100/100 测试通过。
+  - `Device` 数据类字段增加可选默认值（`firmware_version`、`link`）
+  - `LierdaDataUpdateCoordinator` 构造函数中 `config_entry` 改为可选参数
+  - 更新测试 mock 以兼容 HA 2025.x `ConfigEntryState` API
+- [x] **智能酒店支持**：支持智能酒店后台。
 
 ### v2.0.0 (重构版)
 
