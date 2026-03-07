@@ -4,18 +4,19 @@
 import asyncio
 import json
 import logging
+import time
 from typing import Any, Optional
 
 import aiohttp
 
-from custom_components.lierda_iot.api.exceptions import (
+from .exceptions import (
     LierdaApiError,
     LierdaAuthError,
     LierdaConnectionError,
     LierdaTimeoutError,
 )
-from custom_components.lierda_iot.models.auth import AuthData
-from custom_components.lierda_iot.models.device import Device
+from ..models.auth import AuthData
+from ..models.device import Device
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -158,7 +159,7 @@ class LierdaClient:
             "pn": "getDeviceListByUserId",
             "userid": self.auth_data.userid,
             "uid": self.auth_data.userid,
-            "role": self.auth_data.userid,  # role字段传userid，参照master
+            "role": self.auth_data.role,
             "ibmsuserid": self.auth_data.userid,
             "ibmsuserole": self.auth_data.role,
             "ibmsparentid": self.auth_data.parentid,
@@ -235,7 +236,6 @@ class LierdaClient:
             raise LierdaApiError("Not authenticated. Please login first.")
 
         # Build command string
-        import time
         cmd_str = json.dumps({
             "sourceId": str(self.auth_data.userid),
             "serialNum": int(time.time()) % 10000,

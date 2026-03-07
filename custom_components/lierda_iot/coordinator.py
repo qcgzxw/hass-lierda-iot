@@ -8,9 +8,9 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from custom_components.lierda_iot.api.client import LierdaClient
-from custom_components.lierda_iot.api.exceptions import LierdaApiError
-from custom_components.lierda_iot.models.device import Device
+from .api.client import LierdaClient
+from .api.exceptions import LierdaApiError
+from .models.device import Device
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class LierdaDataUpdateCoordinator(DataUpdateCoordinator[dict[int, Device]]):
         Raises:
             UpdateFailed: If API request fails
         """
-        from custom_components.lierda_iot.lierda_devices import LIERDA_DEVICES
+        from .lierda_devices import LIERDA_DEVICES
 
         try:
             # Fetch all devices from API

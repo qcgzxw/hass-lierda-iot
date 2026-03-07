@@ -39,6 +39,12 @@ CONF_KEY_REFRESH_INTERVAL = "refresh_interval"
 DEFAULT_REFRESH_INTERVAL = 300
 
 # Device type constants
+TYPE_LT_CTM = 1   # Light
+TYPE_SW_TK2 = 2   # 2-gang switch
+TYPE_SW_TK3 = 3   # 3-gang switch
+TYPE_SW_TK4 = 4   # 4-gang switch
+TYPE_WD_DYK = 6   # Curtain
+
 TYPE_SS_DOR = 10  # Door sensor
 TYPE_CL_R1M = 26  # Light
 TYPE_SW_KY1 = 53  # 1-gang switch

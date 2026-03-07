@@ -127,9 +127,9 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
             "manufacturer": "Lierda iot",
-            "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
+            "model": f"{LIERDA_DEVICES[self.device.type]['name']} {self.device.link} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
-            "serial_number": str(self.device.id),
+            "serial_number": str(self.device.ddc_id),
         }
 
     @property
@@ -152,6 +152,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "OPEN",
             )
             self.device.attributes["WIN"] = "OPEN"
+            if self.device.id in self.coordinator.data:
+                self.coordinator.data[self.device.id].attributes["WIN"] = "OPEN"
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to open cover %s: %s", self.device.id, err)
@@ -167,6 +169,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "CLOSE",
             )
             self.device.attributes["WIN"] = "CLOSE"
+            if self.device.id in self.coordinator.data:
+                self.coordinator.data[self.device.id].attributes["WIN"] = "CLOSE"
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to close cover %s: %s", self.device.id, err)
@@ -182,6 +186,8 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "STOP",
             )
             self.device.attributes["WIN"] = "STOP"
+            if self.device.id in self.coordinator.data:
+                self.coordinator.data[self.device.id].attributes["WIN"] = "STOP"
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to stop cover %s: %s", self.device.id, err)
@@ -200,7 +206,9 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
                 "LEV",
                 str(position),
             )
-            self.device.attributes["LEV"] = position
+            self.device.attributes["LEV"] = str(position)
+            if self.device.id in self.coordinator.data:
+                self.coordinator.data[self.device.id].attributes["LEV"] = str(position)
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to set cover position %s: %s", self.device.id, err)

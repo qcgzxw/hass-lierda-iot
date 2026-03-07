@@ -120,9 +120,9 @@ class LierdaSensor(CoordinatorEntity[LierdaDataUpdateCoordinator], SensorEntity)
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
             "manufacturer": "Lierda iot",
-            "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
+            "model": f"{LIERDA_DEVICES[self.device.type]['name']} {self.device.link} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
-            "serial_number": str(self.device.id),
+            "serial_number": str(self.device.ddc_id),
         }
 
     @property

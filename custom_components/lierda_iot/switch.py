@@ -118,9 +118,9 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
             "manufacturer": "Lierda iot",
-            "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
+            "model": f"{LIERDA_DEVICES[self.device.type]['name']} {self.device.link} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
-            "serial_number": str(self.device.id),
+            "serial_number": str(self.device.ddc_id),
         }
 
     @property
@@ -154,6 +154,8 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
                     light_mask = 1 << (index - 1)
                     swi_int |= light_mask
                     self.device.attributes["SWI"] = f"{swi_int:#04x}"
+                    if self.device.id in self.coordinator.data:
+                        self.coordinator.data[self.device.id].attributes["SWI"] = f"{swi_int:#04x}"
                 except (ValueError, TypeError, AttributeError):
                     pass
             self.async_write_ha_state()
@@ -183,6 +185,8 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
                     light_mask = 1 << (index - 1)
                     swi_int &= ~light_mask
                     self.device.attributes["SWI"] = f"{swi_int:#04x}"
+                    if self.device.id in self.coordinator.data:
+                        self.coordinator.data[self.device.id].attributes["SWI"] = f"{swi_int:#04x}"
                 except (ValueError, TypeError, AttributeError):
                     pass
             self.async_write_ha_state()

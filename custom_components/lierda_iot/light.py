@@ -121,9 +121,9 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
             "identifiers": {(DOMAIN, self.device.mac_id)},
             "name": self.device.name,
             "manufacturer": "Lierda iot",
-            "model": f"{LIERDA_DEVICES[self.device.type]['name']} ({self.device.mac_id})",
+            "model": f"{LIERDA_DEVICES[self.device.type]['name']} {self.device.link} ({self.device.mac_id})",
             "sw_version": self.device.firmware_version,
-            "serial_number": str(self.device.id),
+            "serial_number": str(self.device.ddc_id),
         }
 
     @property
@@ -160,8 +160,12 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
 
             # Optimistically update state
             self.device.attributes["SWI"] = "ON"
+            if self.device.id in self.coordinator.data:
+                self.coordinator.data[self.device.id].attributes["SWI"] = "ON"
             if "brightness" in kwargs:
                 self.device.attributes["LEV"] = str(kwargs["brightness"])
+                if self.device.id in self.coordinator.data:
+                    self.coordinator.data[self.device.id].attributes["LEV"] = str(kwargs["brightness"])
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to turn on light %s: %s", self.device.id, err)
@@ -178,9 +182,13 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
             )
 
             # Optimistically update state
-            self.device.attributes["SWI"] = "ON"
+            self.device.attributes["SWI"] = "OFF"
+            if self.device.id in self.coordinator.data:
+                self.coordinator.data[self.device.id].attributes["SWI"] = "OFF"
             if "brightness" in kwargs:
                 self.device.attributes["LEV"] = str(kwargs["brightness"])
+                if self.device.id in self.coordinator.data:
+                    self.coordinator.data[self.device.id].attributes["LEV"] = str(kwargs["brightness"])
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to turn off light %s: %s", self.device.id, err)

@@ -19,6 +19,7 @@ class Device:
     attributes: dict[str, Any]
     available: bool
     firmware_version: str | None
+    link: str | None
 
     @classmethod
     def from_api_response(cls, data: dict) -> "Device":
@@ -47,6 +48,9 @@ class Device:
             alias = data.get("alias")
             name = alias if alias else data["name"]
 
+            # Extract link if available
+            link = data.get("link")
+
         except KeyError as e:
             raise ValueError(f"Missing required field: {e.args[0]}") from e
 
@@ -74,6 +78,7 @@ class Device:
             attributes=attributes,
             available=available,
             firmware_version=firmware_version,
+            link=link,
         )
 
     def get_attribute(self, key: str) -> Any:
