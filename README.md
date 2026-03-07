@@ -67,6 +67,16 @@ PS: 以上平台均可注册智能家居网关，功能基本完全一样但是�
 
 ## 版本更新说明
 
+### v2.0.1
+
+- [x] **升级 Home Assistant 支持**：依赖升级至 `homeassistant ^2025.1.0`（实际安装 2025.4.4），全面支持 HA 2025.x。
+- [x] **Python 3.13 支持**：开发环境升级至 Python 3.13，`.venv` 使用系统 Python 3.13.12。
+- [x] **CVE 安全修复**：通过升级 `aiohttp`（随 HA 2025.x 升级至 3.11.16）修复多项安全漏洞（CVE-2024-27306、CVE-2024-23334、CVE-2024-52304、CVE-2025-69223、CVE-2025-69226、CVE-2025-69228）。
+- [x] **测试套件全通过**：修复所有 29 个失败测试用例，实现 100/100 测试通过。
+  - `Device` 数据类字段增加可选默认值（`firmware_version`、`link`）
+  - `LierdaDataUpdateCoordinator` 构造函数中 `config_entry` 改为可选参数
+  - 更新测试 mock 以兼容 HA 2025.x `ConfigEntryState` API
+
 ### v2.0.0 (重构版)
 
 - [x] **底层架构全面重构**：引入 Home Assistant 官方推荐的 `DataUpdateCoordinator` 模型统一管理所有设备状态，优化了服务器请求频率，大幅提升集成运行的稳定性。
