@@ -85,8 +85,10 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
         supported_color_modes = set()
         if device.get_attribute("LEV") is not None:
             supported_color_modes.add(ColorMode.BRIGHTNESS)
+            self._attr_color_mode = ColorMode.BRIGHTNESS
         if not supported_color_modes:
             supported_color_modes.add(ColorMode.ONOFF)
+            self._attr_color_mode = ColorMode.ONOFF
 
         self._attr_supported_color_modes = supported_color_modes
 
