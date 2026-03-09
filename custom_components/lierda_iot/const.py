@@ -3,7 +3,7 @@ from homeassistant.const import Platform
 
 BAND = "Lierda iot"
 DOMAIN = "lierda_iot"
-VERSION = "1.1.0"
+VERSION = "2.1.0"
 ENTRIES_VERSION = 2
 ENTRY_VERSION = 3
 

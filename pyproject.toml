@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hass-lierda-iot"
-version = "2.0.1"
+version = "2.1.0"
 description = "Lierda IoT Home Assistant Integration"
 authors = ["qcgzxw"]
 package-mode = false
