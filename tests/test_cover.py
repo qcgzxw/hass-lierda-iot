@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.lierda_iot.models.device import Device
 
@@ -117,6 +118,7 @@ class TestCoverPlatform:
             {"type": "cover", "icon": "mdi:curtains"},
             mock_client,
         )
+        cover.async_write_ha_state = MagicMock()
 
         # Check initial state (STOP means unknown state)
         assert cover.is_closed is None
@@ -165,6 +167,7 @@ class TestCoverPlatform:
             {"type": "cover", "icon": "mdi:curtains"},
             mock_client,
         )
+        cover.async_write_ha_state = MagicMock()
 
         assert cover.is_closed is False
 
@@ -212,3 +215,37 @@ class TestCoverPlatform:
         # Test with None level
         mock_device.attributes = {"WIN": "STOP", "LIVE": "ON"}
         assert cover.current_cover_position is None
+
+    async def test_cover_control_raises_on_client_error(self):
+        """Test cover control surfaces API failures."""
+        from custom_components.lierda_iot.cover import LierdaCover
+
+        mock_device = Device(
+            id=12345,
+            name="Test Curtain",
+            type=5,
+            mac_id="AA:BB:CC:DD:EE:FF",
+            attributes={"WIN": "STOP", "LEV": 50, "LIVE": "ON"},
+            available=True,
+            firmware_version="1.0.0",
+            ddc_id=100,
+            ddc_mac="00:00:00:00:00:00",
+            ddc_name="Test DDC",
+        )
+        mock_coordinator = AsyncMock()
+        mock_coordinator.data = {12345: mock_device}
+        mock_coordinator.last_update_success = True
+        mock_client = AsyncMock()
+        mock_client.set_device_attribute.side_effect = RuntimeError("boom")
+
+        cover = LierdaCover(
+            mock_coordinator,
+            mock_device,
+            "curtain",
+            {"type": "cover", "icon": "mdi:curtains"},
+            mock_client,
+        )
+        cover.async_write_ha_state = MagicMock()
+
+        with pytest.raises(HomeAssistantError):
+            await cover.async_open_cover()

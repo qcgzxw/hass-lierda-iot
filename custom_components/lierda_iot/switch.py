@@ -8,6 +8,7 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -162,6 +163,7 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
             
         except Exception as err:
             _LOGGER.error("Failed to turn on switch %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to turn on switch {self.device.name}") from err
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
@@ -193,3 +195,4 @@ class LierdaSwitch(CoordinatorEntity[LierdaDataUpdateCoordinator], SwitchEntity)
 
         except Exception as err:
             _LOGGER.error("Failed to turn off switch %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to turn off switch {self.device.name}") from err

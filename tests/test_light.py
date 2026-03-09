@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.lierda_iot.models.device import Device
 
@@ -117,6 +118,7 @@ class TestLightPlatform:
             {"type": "light", "icon": "mdi:lightbulb"},
             mock_client,
         )
+        light.async_write_ha_state = MagicMock()
 
         # Check initial state
         assert light.is_on is False
@@ -128,3 +130,37 @@ class TestLightPlatform:
         # Turn off
         await light.async_turn_off()
         assert mock_client.set_device_attribute.call_count == 2
+
+    async def test_light_control_raises_on_client_error(self):
+        """Test light control surfaces API failures."""
+        from custom_components.lierda_iot.light import LierdaLight
+
+        mock_device = Device(
+            id=12345,
+            name="Test Light",
+            type=26,
+            mac_id="AA:BB:CC:DD:EE:FF",
+            attributes={"SWI": "OFF", "LIVE": "ON"},
+            available=True,
+            firmware_version="1.0.0",
+            ddc_id=100,
+            ddc_mac="00:00:00:00:00:00",
+            ddc_name="Test DDC",
+        )
+        mock_coordinator = AsyncMock()
+        mock_coordinator.data = {12345: mock_device}
+        mock_coordinator.last_update_success = True
+        mock_client = AsyncMock()
+        mock_client.set_device_attribute.side_effect = RuntimeError("boom")
+
+        light = LierdaLight(
+            mock_coordinator,
+            mock_device,
+            "light",
+            {"type": "light", "icon": "mdi:lightbulb"},
+            mock_client,
+        )
+        light.async_write_ha_state = MagicMock()
+
+        with pytest.raises(HomeAssistantError):
+            await light.async_turn_on()

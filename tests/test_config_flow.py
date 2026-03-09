@@ -1,9 +1,10 @@
 # tests/test_config_flow.py
 """Tests for Lierda config flow and migration."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, PropertyMock, patch
 
 import pytest
+from homeassistant.data_entry_flow import AbortFlow
 from homeassistant.config_entries import ConfigEntry
 
 from custom_components.lierda_iot import async_migrate_entry
@@ -12,6 +13,12 @@ from custom_components.lierda_iot.const import (
     CONF_KEY_REFRESH_INTERVAL,
     CONF_KEY_USER_AUTH_DATA,
     ENTRY_VERSION,
+)
+from custom_components.lierda_iot.config_flow import (
+    ApiError,
+    ConfigFlow,
+    InvalidInterval,
+    LierdaConfigFlowHandler,
 )
 
 
@@ -317,6 +324,148 @@ class TestConfigMigration:
         assert config_entry.version == ENTRY_VERSION
         assert "refresh_interval" in updated_data
         assert updated_data["refresh_interval"] == 900
+
+
+@pytest.mark.asyncio
+class TestConfigFlowValidation:
+    """Tests for config flow validation and entry creation."""
+
+    async def test_validate_login_closes_client_on_auth_error(self):
+        """Test login client is always closed when authentication fails."""
+        flow = ConfigFlow()
+        flow.hass = MagicMock()
+        close_mock = AsyncMock()
+        client_mock = MagicMock()
+        client_mock.login = AsyncMock(side_effect=Exception("boom"))
+        client_mock.close = close_mock
+
+        with patch("custom_components.lierda_iot.config_flow.LierdaClient", return_value=client_mock):
+            with pytest.raises(Exception):
+                await flow.validate_login("user", "pass", "www.lierdalux.cn", save_account=False)
+
+        close_mock.assert_awaited_once()
+
+    async def test_get_user_device_list_closes_client_on_api_error(self):
+        """Test device fetch client is always closed when fetching devices fails."""
+        flow = ConfigFlow()
+        flow.hass = MagicMock()
+        flow.config = {
+            "auth_data": {
+                "userid": 1,
+                "username": "user",
+                "domain": "www.lierdalux.cn",
+                "role": 1,
+                "parentid": 0,
+                "nat": "nat",
+                "phone": "13800138000",
+            }
+        }
+        close_mock = AsyncMock()
+        client_mock = MagicMock()
+        client_mock.get_all_devices = AsyncMock(side_effect=Exception("boom"))
+        client_mock.close = close_mock
+
+        with patch("custom_components.lierda_iot.config_flow.LierdaClient", return_value=client_mock):
+            with pytest.raises(ApiError):
+                await flow.get_user_device_list()
+
+        close_mock.assert_awaited_once()
+
+    async def test_create_entry_aborts_when_unique_id_already_configured(self):
+        """Test duplicate unique IDs abort the config flow."""
+        flow = ConfigFlow()
+        flow.config = {
+            "auth_data": {
+                "userid": 12345,
+                "username": "user",
+                "domain": "www.lierdalux.cn",
+                "role": 1,
+                "parentid": 0,
+                "nat": "nat",
+                "phone": "13800138000",
+            }
+        }
+        flow.async_set_unique_id = AsyncMock()
+        flow._abort_if_unique_id_configured = MagicMock(side_effect=AbortFlow("already_configured"))
+
+        with pytest.raises(AbortFlow):
+            await flow._create_entry({"lux_domain": "www.lierdalux.cn"})
+
+        flow.async_set_unique_id.assert_awaited_once()
+        flow._abort_if_unique_id_configured.assert_called_once()
+
+    async def test_validate_interval_rejects_too_small_value(self):
+        """Test interval validation rejects values below 10 seconds."""
+        flow = ConfigFlow()
+
+        with pytest.raises(InvalidInterval):
+            flow.validate_interval(9)
+
+    async def test_async_step_user_propagates_abort_for_duplicate_entry(self):
+        """Test duplicate entries abort instead of returning a generic form error."""
+        flow = ConfigFlow()
+        flow.hass = MagicMock()
+        user_input = {
+            "username": "user",
+            "password": "pass",
+            "lux_domain": "www.lierdalux.cn",
+            "refresh_interval": 300,
+        }
+        flow.validate_login = AsyncMock()
+        flow.validate_interval = MagicMock()
+        flow.load_all_devices = AsyncMock()
+        flow._create_entry = AsyncMock(side_effect=AbortFlow("already_configured"))
+
+        with pytest.raises(AbortFlow):
+            await flow.async_step_user(user_input)
+
+
+@pytest.mark.asyncio
+class TestOptionsFlow:
+    """Tests for options flow validation."""
+
+    async def test_options_flow_rejects_invalid_interval(self):
+        """Test options flow keeps the form open for invalid intervals."""
+        flow = LierdaConfigFlowHandler()
+        flow.hass = MagicMock()
+        config_entry = MagicMock(spec=ConfigEntry)
+        config_entry.data = {"refresh_interval": 300}
+        config_entry.entry_id = "entry-id"
+
+        with patch.object(
+            LierdaConfigFlowHandler,
+            "config_entry",
+            new_callable=PropertyMock,
+            return_value=config_entry,
+        ):
+            result = await flow.async_step_init({"refresh_interval": 5})
+
+        assert result["type"] == "form"
+        assert result["errors"] == {"base": "invalid_interval"}
+        flow.hass.config_entries.async_update_entry.assert_not_called()
+
+    async def test_options_flow_updates_entry_for_valid_interval(self):
+        """Test options flow stores a valid interval and schedules a reload."""
+        flow = LierdaConfigFlowHandler()
+        flow.hass = MagicMock()
+        flow.hass.async_create_task = MagicMock()
+        flow.hass.config_entries = MagicMock()
+        flow.hass.config_entries.async_reload = AsyncMock()
+        config_entry = MagicMock(spec=ConfigEntry)
+        config_entry.data = {"refresh_interval": 300}
+        config_entry.entry_id = "entry-id"
+
+        with patch.object(
+            LierdaConfigFlowHandler,
+            "config_entry",
+            new_callable=PropertyMock,
+            return_value=config_entry,
+        ):
+            result = await flow.async_step_init({"refresh_interval": 15})
+
+        assert result["type"] == "create_entry"
+        flow.hass.config_entries.async_update_entry.assert_called_once()
+        flow.hass.async_create_task.assert_called_once()
 
     async def test_v3_config_returns_true_without_changes(self):
         """Test v3 config entry returns True without changes."""

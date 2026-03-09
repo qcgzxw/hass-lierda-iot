@@ -8,6 +8,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, OptionsFlow
+from homeassistant.data_entry_flow import AbortFlow
 from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 
@@ -68,12 +69,12 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         return load_json(record_file, default={})
 
     async def validate_login(self, username: str, password: str, domain: str, save_account: bool) -> None:
+        client = LierdaClient()
         try:
             if username is None or password is None:
                 raise InvalidAuth
 
             # Create client and login
-            client = LierdaClient()
             auth_data = await client.login(username, password, domain)
 
             # Store auth data in config
@@ -93,10 +94,6 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_KEY_PASSWORD: password,
                     "auth_data": self.config["auth_data"],
                 })
-
-            # Close client session
-            await client.close()
-
         except LierdaAuthError:
             if save_account:
                 self._save_login_config({
@@ -114,10 +111,11 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_KEY_PASSWORD: password,
                 })
             raise InvalidAuth
+        finally:
+            await client.close()
 
     def validate_interval(self, interval: int) -> None:
-        if interval < 10:
-            raise InvalidInterval
+        validate_refresh_interval(interval)
         self.config[CONF_KEY_REFRESH_INTERVAL] = interval
 
     async def load_all_devices(self):
@@ -131,10 +129,9 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
             self.config[CONF_KEY_DEVICES][device['id']] = device
 
     async def get_user_device_list(self) -> list[dict]:
+        client = LierdaClient()
         try:
             # Create client and set auth data
-            client = LierdaClient()
-
             # Manually set auth_data from stored config
             auth_data_dict = self.config["auth_data"]
             client.auth_data = AuthData(
@@ -163,10 +160,6 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                 }
                 for device in devices
             ]
-
-            # Close client session
-            await client.close()
-
             return device_list
         except (LierdaConnectionError, LierdaTimeoutError):
             raise CannotConnect
@@ -176,6 +169,8 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         except Exception as exception:
             _LOGGER.exception("Unexpected error while fetching devices: %s", exception)
             raise ApiError(str(exception))
+        finally:
+            await client.close()
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None):
 
@@ -201,6 +196,8 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "invalid_interval"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
+            except AbortFlow:
+                raise
             except Exception as exception:
                 _LOGGER.exception(str(exception))
                 errors["base"] = str(exception)
@@ -213,6 +210,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         unique_id = f"{self.config['auth_data']['userid']}@{LIERDA_API_LIST[user_input[CONF_LUX_DOMAIN]]}"
         _LOGGER.debug(unique_id)
         await self.async_set_unique_id(unique_id)
+        self._abort_if_unique_id_configured()
 
         _LOGGER.debug(self.config)
 
@@ -242,6 +240,12 @@ def schema_defaults(schema, dps_list=None, **defaults):
     return copy
 
 
+def validate_refresh_interval(interval: int) -> None:
+    """Validate the refresh interval for config and options flows."""
+    if interval < 10:
+        raise InvalidInterval
+
+
 class LierdaConfigFlowHandler(OptionsFlow):
     """Handle a config flow for Lierda iot options."""
 
@@ -252,30 +256,35 @@ class LierdaConfigFlowHandler(OptionsFlow):
             CONF_KEY_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL
         )
         defaults = {CONF_REFRESH_INTERVAL: old_refresh_interval}
+        errors: dict[str, str] = {}
 
         if user_input is not None:
-            from datetime import timedelta
             refresh_interval = user_input.get(CONF_REFRESH_INTERVAL, old_refresh_interval)
+            try:
+                validate_refresh_interval(refresh_interval)
+            except InvalidInterval:
+                errors["base"] = "invalid_interval"
+            else:
+                # Reload the integration to apply the new interval immediately
+                # We don't need to manually update the config entry data because the options
+                # flow will return an entry which HA will save. But for the polling interval
+                # to be read by the setup, we can either store it in options or update data.
+                # Here we just update the data as before.
+                new_data = {**self.config_entry.data, CONF_KEY_REFRESH_INTERVAL: refresh_interval}
+                self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
 
-            # Reload the integration to apply the new interval immediately
-            # We don't need to manually update the config entry data because the options 
-            # flow will return an entry which HA will save. But for the polling interval 
-            # to be read by the setup, we can either store it in options or update data.
-            # Here we just update the data as before.
-            new_data = {**self.config_entry.data, CONF_KEY_REFRESH_INTERVAL: refresh_interval}
-            self.hass.config_entries.async_update_entry(self.config_entry, data=new_data)
-            
-            # The async_create_entry triggers an EVENT_OPTIONS_FLOW_FIRED but not a reload automatically.
-            # However `async_reload` can restart the entry. We'll queue a reload.
-            self.hass.async_create_task(
-                self.hass.config_entries.async_reload(self.config_entry.entry_id)
-            )
+                # The async_create_entry triggers an EVENT_OPTIONS_FLOW_FIRED but not a reload automatically.
+                # However `async_reload` can restart the entry. We'll queue a reload.
+                self.hass.async_create_task(
+                    self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                )
 
-            return self.async_create_entry(title="", data={})
+                return self.async_create_entry(title="", data={})
 
         return self.async_show_form(
             step_id="init",
             data_schema=schema_defaults(STEP_INIT_OPTIONS_DATA_SCHEMA, **defaults),
+            errors=errors,
         )
 
 

@@ -39,7 +39,7 @@ class LierdaDataUpdateCoordinator(DataUpdateCoordinator[dict[int, Device]]):
         hass: HomeAssistant,
         client: LierdaClient,
         update_interval: timedelta,
-        config_entry: ConfigEntry | None = None,
+        config_entry: ConfigEntry,
     ) -> None:
         """Initialize the coordinator.
 
@@ -54,6 +54,7 @@ class LierdaDataUpdateCoordinator(DataUpdateCoordinator[dict[int, Device]]):
             _LOGGER,
             name="Lierda IoT",
             update_interval=update_interval,
+            config_entry=config_entry,
         )
         self.client = client
         self.config_entry = config_entry

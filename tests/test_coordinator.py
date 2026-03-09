@@ -11,6 +11,14 @@ from custom_components.lierda_iot.api.exceptions import LierdaApiError
 from custom_components.lierda_iot.models.device import Device
 
 
+def _mock_config_entry():
+    """Create a minimal config entry mock for coordinator tests."""
+    config_entry = MagicMock()
+    config_entry.entry_id = "test-entry"
+    config_entry.data = {}
+    return config_entry
+
+
 @pytest.mark.asyncio
 class TestLierdaDataUpdateCoordinator:
     """Tests for LierdaDataUpdateCoordinator."""
@@ -61,6 +69,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=update_interval,
+            config_entry=_mock_config_entry(),
         )
 
         # Call _async_update_data
@@ -95,6 +104,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=update_interval,
+            config_entry=_mock_config_entry(),
         )
 
         # Call _async_update_data
@@ -130,6 +140,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=update_interval,
+            config_entry=_mock_config_entry(),
         )
 
         # Call _async_update_data and expect UpdateFailed
@@ -158,6 +169,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=update_interval,
+            config_entry=_mock_config_entry(),
         )
 
         # Verify update interval is set correctly
@@ -223,6 +235,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=timedelta(seconds=30),
+            config_entry=_mock_config_entry(),
         )
 
         # Call _async_update_data
@@ -252,6 +265,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=timedelta(seconds=30),
+            config_entry=_mock_config_entry(),
         )
 
         # Verify it's an instance of DataUpdateCoordinator
@@ -270,6 +284,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=timedelta(seconds=30),
+            config_entry=_mock_config_entry(),
         )
 
         # Verify client is stored
@@ -308,6 +323,7 @@ class TestLierdaDataUpdateCoordinator:
             hass=hass,
             client=client,
             update_interval=timedelta(seconds=30),
+            config_entry=_mock_config_entry(),
         )
 
         # Call _async_update_data

@@ -8,6 +8,7 @@ from homeassistant.components.cover import CoverEntity, CoverEntityFeature, Cove
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -157,6 +158,7 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to open cover %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to open cover {self.device.name}") from err
 
     async def async_close_cover(self, **kwargs: Any) -> None:
         """Close the cover."""
@@ -174,6 +176,7 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to close cover %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to close cover {self.device.name}") from err
 
     async def async_stop_cover(self, **kwargs: Any) -> None:
         """Stop the cover."""
@@ -191,6 +194,7 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to stop cover %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to stop cover {self.device.name}") from err
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         """Move the cover to a specific position."""
@@ -212,3 +216,4 @@ class LierdaCover(CoordinatorEntity[LierdaDataUpdateCoordinator], CoverEntity):
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to set cover position %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to set cover position for {self.device.name}") from err

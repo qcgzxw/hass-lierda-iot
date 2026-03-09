@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.exceptions import HomeAssistantError
 
 from custom_components.lierda_iot.models.device import Device
 
@@ -117,6 +118,7 @@ class TestSwitchPlatform:
             {"type": "switch", "name": "开关1"},
             mock_client,
         )
+        switch.async_write_ha_state = MagicMock()
 
         # Check initial state
         assert switch.is_on is False
@@ -130,3 +132,37 @@ class TestSwitchPlatform:
         # Turn off
         await switch.async_turn_off()
         assert mock_client.set_device_attribute.call_count == 2
+
+    async def test_switch_control_raises_on_client_error(self):
+        """Test switch control surfaces API failures."""
+        from custom_components.lierda_iot.switch import LierdaSwitch
+
+        mock_device = Device(
+            id=12345,
+            name="Test Switch",
+            type=53,
+            mac_id="AA:BB:CC:DD:EE:FF",
+            attributes={"SWI": "0x00", "KY1": "OFF", "LIVE": "ON"},
+            available=True,
+            firmware_version="1.0.0",
+            ddc_id=100,
+            ddc_mac="00:00:00:00:00:00",
+            ddc_name="Test DDC",
+        )
+        mock_coordinator = AsyncMock()
+        mock_coordinator.data = {12345: mock_device}
+        mock_coordinator.last_update_success = True
+        mock_client = AsyncMock()
+        mock_client.set_device_attribute.side_effect = RuntimeError("boom")
+
+        switch = LierdaSwitch(
+            mock_coordinator,
+            mock_device,
+            "ky1",
+            {"type": "switch", "name": "开关1"},
+            mock_client,
+        )
+        switch.async_write_ha_state = MagicMock()
+
+        with pytest.raises(HomeAssistantError):
+            await switch.async_turn_on()

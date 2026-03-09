@@ -8,6 +8,7 @@ from homeassistant.components.light import LightEntity, ColorMode
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -171,6 +172,7 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to turn on light %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to turn on light {self.device.name}") from err
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the light off."""
@@ -194,3 +196,4 @@ class LierdaLight(CoordinatorEntity[LierdaDataUpdateCoordinator], LightEntity):
             self.async_write_ha_state()
         except Exception as err:
             _LOGGER.error("Failed to turn off light %s: %s", self.device.id, err)
+            raise HomeAssistantError(f"Failed to turn off light {self.device.name}") from err

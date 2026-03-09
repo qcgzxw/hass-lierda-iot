@@ -6,12 +6,11 @@ authors = ["qcgzxw"]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.13,<3.14"
-homeassistant = "^2025.1.0"
+python = ">=3.13.2,<3.14"
+homeassistant = "^2025.10.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
-pytest-homeassistant-custom-component = "^0.13.210"
 pytest-aiohttp = "^1.0.0"
 pytest-cov = "^6.0.0"
 mypy = "^1.15.0"
