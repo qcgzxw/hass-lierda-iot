@@ -1,6 +1,6 @@
-## hass-lierda-iot
+# 利尔达网关 Home Assistant 插件
 
-利尔达网关 Home Assistant 插件
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 
 苦于lierda设备系统无法接入HA，便自己写了HA插件`Lierda iot`。
 主要通过lierdalux接口控制lierda设备，目前支持的设备有：
@@ -18,16 +18,15 @@
 
 ### 方法一：通过 HACS 安装（推荐）
 
-1. 确保你的 Home Assistant 已经安装了 [HACS](https://hacs.xyz/)
-2. 在 HACS 中添加自定义仓库：
-   - 打开 HACS → 集成
-   - 点击右上角三个点 → 自定义仓库
-   - 仓库 URL：`https://github.com/qcgzxw/hass-lierda-iot`
-   - 类别：集成
-   - 点击添加
-3. 在 HACS 中搜索并安装 "Lierda IoT"
-4. 重启 Home Assistant
-5. 在设置 → 设备与服务 → 添加集成中搜索 "Lierda IoT"
+> [!IMPORTANT]
+> 请先按 [HACS 安装指南](https://hacs.xyz/docs/use/download/download/) 在 Home Assistant 中安装 HACS。
+
+[![Open your Home Assistant instance and open "lierda_iot" inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=qcgzxw&repository=hass-lierda-iot)
+
+1. 点击上方按钮，在 HACS 中直接打开本集成页面
+2. 安装 "Lierda IoT"
+3. **重启 Home Assistant**
+4. 在设置 → 设备与服务 → 添加集成中搜索 "Lierda IoT"
 
 ### 方法二：手动安装
 
@@ -54,19 +53,23 @@ PS: 以上平台均可注册智能家居网关，功能基本完全一样但是�
 4. 在HA中添加`custom_components`目录，将`lierda_iot`目录拷贝到`custom_components`目录下
 5. 设置手机号、登录密码、刷新间隔即可自动添加所有受支持的设备
 
-## TODO
+## 开发与测试
 
-- [ ] 设备图标、美观
-- [ ] 设备属性抽离
-- [ ] reload实现
-- [ ] option_flow实现
-- [ ] 更多设备适配
+本地开发使用 `requirements.txt` 和 `requirements-dev.txt` 管理依赖。
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements-dev.txt
+pytest
+```
 
 ## 版本更新说明
 
 ### v2.0.2
 
-- [x] **修复灯具兼容性**：为 `light` 实体补充设定 `_attr_color_mode` 属性，修复了在 Home Assistant Core 2025.3 及更新版本中，因实体不汇报颜色模式 (color_mode) 而产生的警告并在将来停止工作的异常。
+- [x] **修复灯具兼容性**：为 `light` 实体补充设定 `_attr_color_mode` 属性，修复了在 Home Assistant Core 2025.3
+  及更新版本中，因实体不汇报颜色模式 (color_mode) 而产生的警告并在将来停止工作的异常。
 
 ### v2.1.0
 
@@ -80,20 +83,23 @@ PS: 以上平台均可注册智能家居网关，功能基本完全一样但是�
 
 - [x] **升级 Home Assistant 支持**：依赖升级至 `homeassistant ^2025.1.0`（实际安装 2025.4.4），全面支持 HA 2025.x。
 - [x] **Python 3.13 支持**：开发环境升级至 Python 3.13，`.venv` 使用系统 Python 3.13.12。
-- [x] **CVE 安全修复**：通过升级 `aiohttp`（随 HA 2025.x 升级至 3.11.16）修复多项安全漏洞（CVE-2024-27306、CVE-2024-23334、CVE-2024-52304、CVE-2025-69223、CVE-2025-69226、CVE-2025-69228）。
+- [x] **CVE 安全修复**：通过升级 `aiohttp`（随 HA 2025.x 升级至
+  3.11.16）修复多项安全漏洞（CVE-2024-27306、CVE-2024-23334、CVE-2024-52304、CVE-2025-69223、CVE-2025-69226、CVE-2025-69228）。
 - [x] **测试套件全通过**：修复所有 29 个失败测试用例，实现 100/100 测试通过。
-  - `Device` 数据类字段增加可选默认值（`firmware_version`、`link`）
-  - `LierdaDataUpdateCoordinator` 构造函数中 `config_entry` 改为可选参数
-  - 更新测试 mock 以兼容 HA 2025.x `ConfigEntryState` API
+    - `Device` 数据类字段增加可选默认值（`firmware_version`、`link`）
+    - `LierdaDataUpdateCoordinator` 构造函数中 `config_entry` 改为可选参数
+    - 更新测试 mock 以兼容 HA 2025.x `ConfigEntryState` API
 - [x] **智能酒店支持**：支持智能酒店后台。
 
 ### v2.0.0 (重构版)
 
 - [x] **底层架构全面重构**：引入 Home Assistant 官方推荐的 `DataUpdateCoordinator` 模型统一管理所有设备状态，优化了服务器请求频率，大幅提升集成运行的稳定性。
 - [x] **API 模块重构**：抽离底层 API Client，提供更加清晰、健壮的鉴权和错误处理机制。
-- [x] **配置流 (Config Flow) 升级**：深度适配并兼容 Home Assistant 最新版本 (2024.x-2026.x+) 的轮询间隔动态调整 (OptionsFlow) 机制。
+- [x] **配置流 (Config Flow) 升级**：深度适配并兼容 Home Assistant 最新版本 (2024.x-2026.x+) 的轮询间隔动态调整 (
+  OptionsFlow) 机制。
 - [x] **减少日志噪音**：对账户下暂未得到插件支持的未知设备类型以及虚拟设备进行全局拦截，根除以往高频刷屏报错的痛点。
-- [x] **组件结构规范化**：告别原先所有组件揉在一块的写法，采用标准平台文件架构 (`switch`, `sensor`, `cover` 等独立分离) 方便未来接入更多类别设备。
+- [x] **组件结构规范化**：告别原先所有组件揉在一块的写法，采用标准平台文件架构 (`switch`, `sensor`, `cover` 等独立分离)
+  方便未来接入更多类别设备。
 
 ### v1.1.0
 
